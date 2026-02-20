@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# OpenClaw Preview Sync - 文件同步脚本
-# 用法: ./skill/preview-sync.sh [commit-message]
+# OpenClaw Lens - 文件同步脚本
+# 用法: preview-sync <source-file> [agent-name]
 
 set -e
 
@@ -10,65 +10,89 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# 获取脚本所在目录
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+# 从 openclaw.json 读取配置
+OPENCLAW_CONFIG="$HOME/.openclaw/openclaw.json"
 
-# 默认提交信息
-DEFAULT_MESSAGE="chore: sync preview files"
-
-# 获取提交信息参数
-COMMIT_MESSAGE="${1:-$DEFAULT_MESSAGE}"
-
-echo -e "${BLUE}📁 OpenClaw Preview Sync${NC}"
-echo "================================"
-
-# 切换到项目根目录
-cd "$PROJECT_ROOT"
-
-# 检查是否有远程仓库
-echo -e "\n${YELLOW}[1/5] 检查远程仓库...${NC}"
-if ! git remote | grep -q "origin"; then
-    echo -e "${RED}❌ 未配置远程仓库 origin${NC}"
-    echo "请先添加远程仓库: git remote add origin <repository-url>"
+if [ ! -f "$OPENCLAW_CONFIG" ]; then
+    echo -e "${RED}❌ 未找到 OpenClaw 配置文件${NC}"
     exit 1
 fi
-REMOTE_URL=$(git remote get-url origin)
-echo -e "${GREEN}✓ 远程仓库: $REMOTE_URL${NC}"
 
-# 检查工作目录状态
-echo -e "\n${YELLOW}[2/5] 检查文件状态...${NC}"
-if git diff-index --quiet HEAD -- 2>/dev/null; then
-    echo -e "${GREEN}✓ 没有需要同步的更改${NC}"
-    echo -e "${BLUE}当前已是最新状态${NC}"
-    exit 0
+# 读取配置
+PREVIEW_REPO=$(jq -r '.skills.entries["preview-sync"].previewRepo // empty' "$OPENCLAW_CONFIG" 2>/dev/null)
+AGENT_NAME=$(jq -r '.skills.entries["preview-sync"].agentName // "default"' "$OPENCLAW_CONFIG" 2>/dev/null)
+
+if [ -z "$PREVIEW_REPO" ]; then
+    echo -e "${RED}❌ 未配置 preview-sync skill${NC}"
+    echo "请在 ~/.openclaw/openclaw.json 中添加配置："
+    echo ""
+    echo '"preview-sync": {'
+    echo '  "enabled": true,'
+    echo '  "previewRepo": "username/repo-name",'
+    echo '  "agentName": "kira"'
+    echo '}'
+    exit 1
 fi
 
-# 显示更改的文件
-echo -e "${BLUE}以下文件已更改:${NC}"
-git status --short
+# 检查参数
+if [ $# -eq 0 ]; then
+    echo "用法: preview-sync <source-file> [agent-name]"
+    echo ""
+    echo "示例:"
+    echo "  preview-sync /path/to/file.md"
+    echo "  preview-sync /path/to/file.md ha"
+    exit 1
+fi
+
+SOURCE_FILE="$1"
+AGENT_NAME="${2:-$AGENT_NAME}"
+
+# 检查源文件是否存在
+if [ ! -f "$SOURCE_FILE" ]; then
+    echo -e "${RED}❌ 文件不存在: $SOURCE_FILE${NC}"
+    exit 1
+fi
+
+# 解析仓库信息
+GITHUB_USER=$(echo "$PREVIEW_REPO" | cut -d'/' -f1)
+REPO_NAME=$(echo "$PREVIEW_REPO" | cut -d'/' -f2)
+
+echo -e "${BLUE}🔍 OpenClaw Lens Sync${NC}"
+echo "===================="
+echo "  仓库: $PREVIEW_REPO"
+echo "  Agent: $AGENT_NAME"
 echo ""
 
-# 添加所有更改
-echo -e "${YELLOW}[3/5] 添加更改到暂存区...${NC}"
-git add .
-echo -e "${GREEN}✓ 更改已添加到暂存区${NC}"
+# Clone 预览仓库到临时目录
+TEMP_DIR=$(mktemp -d)
+trap "rm -rf $TEMP_DIR" EXIT
 
-# 创建提交
-echo -e "\n${YELLOW}[4/5] 创建提交...${NC}"
-git commit -m "$COMMIT_MESSAGE"
-echo -e "${GREEN}✓ 提交已创建: $COMMIT_MESSAGE${NC}"
+echo -e "${YELLOW}[1/4] Clone 预览仓库...${NC}"
+git clone "https://github.com/$PREVIEW_REPO.git" "$TEMP_DIR" 2>&1 | grep -v "^Cloning into\|^remote:\|^Receiving\|^Resolving\|^From"
 
-# 推送到远程
-echo -e "\n${YELLOW}[5/5] 推送到远程仓库...${NC}"
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-git push origin "$CURRENT_BRANCH"
-echo -e "${GREEN}✓ 已推送到 origin/$CURRENT_BRANCH${NC}"
+cd "$TEMP_DIR"
 
-echo -e "\n${GREEN}================================${NC}"
+# 创建目标目录
+TARGET_DIR="public/agents/$AGENT_NAME"
+mkdir -p "$TARGET_DIR"
+
+# 复制文件
+FILENAME=$(basename "$SOURCE_FILE")
+echo -e "${YELLOW}[2/4] 复制文件到 $TARGET_DIR/$FILENAME...${NC}"
+cp "$SOURCE_FILE" "$TARGET_DIR/$FILENAME"
+
+# Git 操作
+echo -e "${YELLOW}[3/4] 提交更改...${NC}"
+git add "$TARGET_DIR/$FILENAME"
+git commit -m "Add $FILENAME to $AGENT_NAME" 2>&1 | grep -v "^Author:\|^Date:\|^$\|^    " || true
+
+echo -e "${YELLOW}[4/4] 推送到 GitHub...${NC}"
+git push 2>&1 | grep -v "^To\|^remote:\|^From\|^   "
+
+echo ""
 echo -e "${GREEN}✅ 同步完成！${NC}"
 echo ""
-echo -e "${BLUE}GitHub Actions 将自动构建并部署。${NC}"
-echo -e "${BLUE}请访问 Actions 页面查看构建状态。${NC}"
+echo -e "${BLUE}预览地址:${NC}"
+echo "  https://$GITHUB_USER.github.io/$REPO_NAME/"
