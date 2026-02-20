@@ -9,6 +9,26 @@ export default function PreviewModal({ file, content, onClose }) {
 
   const fileType = getFileType(file.name)
 
+  const handleRaw = () => {
+    // 在新标签页打开原始内容
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+  }
+
+  const handleDownload = () => {
+    // 下载文件
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = file.name
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black/80 z-50 p-8 overflow-y-auto flex justify-center items-start"
@@ -21,10 +41,16 @@ export default function PreviewModal({ file, content, onClose }) {
         <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center z-10">
           <div className="font-mono text-sm font-semibold">{file.name}</div>
           <div className="flex gap-2">
-            <button className="px-4 py-2 text-sm border border-gray-200 hover:border-black transition-colors">
+            <button
+              onClick={handleRaw}
+              className="px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-gray-50 transition-colors"
+            >
               Raw
             </button>
-            <button className="px-4 py-2 text-sm border border-gray-200 hover:border-black transition-colors">
+            <button
+              onClick={handleDownload}
+              className="px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-gray-50 transition-colors"
+            >
               Download
             </button>
             <button
