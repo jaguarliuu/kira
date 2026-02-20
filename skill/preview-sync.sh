@@ -78,7 +78,7 @@ git add "$TARGET_DIR/$FILENAME"
 git commit -m "Add $FILENAME to $AGENT_NAME" 2>&1 | grep -v "^Author:\|^Date:\|^$\|^    " || true
 
 echo -e "${YELLOW}[3/3] 推送到 GitHub...${NC}"
-git push 2>&1 | grep -v "^To\|^remote:\|^From\|^   "
+git push 2>&1 | grep -v "^To\|^remote:\|^From\|^   " || true
 
 echo ""
 echo -e "${GREEN}✅ 同步完成！${NC}"
