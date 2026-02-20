@@ -1,0 +1,22 @@
+{
+  "name": "preview-sync",
+  "version": "1.0.0",
+  "description": "OpenClaw Preview 同步工具 - 自动同步文件到 GitHub 并触发部署",
+  "author": "OpenClaw",
+  "repository": "",
+  "branch": "main",
+  "scripts": {
+    "sync": "./skill/preview-sync.sh",
+    "install": "./skill/install.sh"
+  },
+  "config": {
+    "autoPush": true,
+    "defaultCommitMessage": "chore: sync preview files",
+    "buildCommand": "npm run build",
+    "outputDir": "./dist"
+  },
+  "requirements": {
+    "git": ">=2.0.0",
+    "node": ">=18.0.0"
+  }
+}
