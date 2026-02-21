@@ -1,71 +1,88 @@
-# OpenClaw Preview Sync Skill
+---
+name: preview-sync
+description: Automatically sync files to GitHub repository for preview on GitHub Pages. Use when Agent generates files (markdown, HTML, images) that need to be previewed on a web interface. Triggers on requests like "sync this file to preview", "update preview", "upload to preview site", or when Agent completes writing documents/reports/articles that should be accessible via web.
+---
 
-自动将本地文件同步到 GitHub 仓库，触发 GitHub Actions 构建并部署预览站点。
+# Preview Sync Skill
 
-## 功能
+Sync local files to GitHub repository for automatic preview deployment on GitHub Pages.
 
-- 📁 本地文件自动同步到 GitHub
-- 🚀 触发 GitHub Actions 自动构建
-- 🌐 部署到 GitHub Pages 预览
-
-## 前置要求
-
-1. 已安装 Git
-2. 有 GitHub 仓库的写权限
-3. 已配置 GitHub Token（如需私有仓库访问）
-
-## 安装
+## Quick Start
 
 ```bash
-./skill/install.sh
+preview-sync /path/to/file.md [agent-name]
 ```
 
-## 使用方法
-
-### 同步文件
-
+**Example:**
 ```bash
-./skill/preview-sync.sh [commit-message]
+preview-sync /tmp/report.md kira
 ```
 
-参数：
-- `commit-message` (可选): 提交信息，默认为 "chore: sync preview files"
+This will:
+1. Copy file to `/opt/openclaw/kira/public/agents/kira/`
+2. Commit and push to GitHub
+3. Trigger GitHub Actions deployment
+4. File appears at `https://your-username.github.io/repo/` in 1-2 minutes
 
-### 示例
+## Configuration
 
-```bash
-# 使用默认提交信息
-./skill/preview-sync.sh
-
-# 使用自定义提交信息
-./skill/preview-sync.sh "feat: 更新预览内容"
-```
-
-## 配置
-
-编辑 `skill/skill.json` 自定义行为：
+Skill reads configuration from `~/.openclaw/openclaw.json`:
 
 ```json
 {
-  "name": "preview-sync",
-  "version": "1.0.0",
-  "description": "OpenClaw Preview 同步工具",
-  "repository": "your-username/your-repo",
-  "branch": "main"
+  "skills": {
+    "entries": {
+      "preview-sync": {
+        "enabled": true,
+        "previewRepo": "username/repo-name",
+        "agentName": "default-agent-name"
+      }
+    }
+  }
 }
 ```
 
-## 工作流程
+**Fields:**
+- `previewRepo`: GitHub repository (format: username/repo)
+- `agentName`: Default agent name (can be overridden via command line)
 
-1. 脚本检查是否有未提交的更改
-2. 将更改添加到 Git 暂存区
-3. 创建提交
-4. 推送到远程仓库
-5. GitHub Actions 自动触发构建
-6. 构建完成后部署到 GitHub Pages
+## Project Structure
 
-## 注意事项
+Files are organized by agent:
 
-- 确保已在项目根目录初始化 Git 仓库
-- 确保远程仓库已正确配置
-- GitHub Actions 构建可能需要几分钟时间
+```
+/opt/openclaw/kira/public/agents/
+├── kira/     # Kira's files
+├── ha/       # Ha's files
+└── hen/      # Hen's files
+```
+
+**Adding a new agent:**
+```bash
+mkdir /opt/openclaw/kira/public/agents/new-agent
+preview-sync /path/to/file.md new-agent
+```
+
+No code changes needed.
+
+## Supported File Types
+
+- **Markdown (.md)**: Rendered with GFM syntax, code highlighting
+- **HTML (.html)**: Rendered in iframe sandbox
+- **Images (.png, .jpg, .gif, .svg, .webp)**: Direct display
+- **Code files (.js, .py, .java)**: Plain text display
+
+## Workflow
+
+1. Agent generates a file (document, report, article)
+2. Call `preview-sync` with file path and agent name
+3. Script copies file to project directory
+4. Git commit and push to GitHub
+5. GitHub Actions builds and deploys
+6. File accessible on preview site in 1-2 minutes
+
+## Script Location
+
+The main script is at `scripts/preview-sync.sh` and is installed globally as `/usr/local/bin/preview-sync`.
+
+For script details, see `scripts/preview-sync.sh`.
