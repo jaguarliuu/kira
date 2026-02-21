@@ -1,50 +1,71 @@
-# OpenClaw Lens：文件预览平台的技术演进
+# OpenClaw Lens：从手动查看到自动化预览的演进
 
 ## 背景
 
-OpenClaw 系统中，Agent 生成的文件需要一个便捷的查看方式。最初采用的方式是通过 SSH 登录服务器，使用命令行工具查看文件内容。这种方式存在以下限制：
+做 OpenClaw 的时候有个问题：Agent 生成的文件怎么查看？
 
-**效率考量。** 每次查看文件都需要登录服务器、定位目录、执行命令。开发调试阶段频繁查看文件时，操作流程较为繁琐。
+最开始的方式很原始。Kira 写完文档，哼将出完报告，我们得 SSH 到服务器上，`cd` 到对应目录，然后用 `cat` 或者 `vim` 看。有时候文件太大，`cat` 一屏显示不完，得配合 `less` 分页。遇到 Markdown 格式的还好，遇到 HTML 或者图片，终端里根本看不了。
 
-**移动端访问。** 手机等移动设备上使用 SSH 客户端体验有限，且不适合所有用户场景。
+这样做有几个问题。
 
-**协作场景。** 与他人分享文件内容时，要么传输文件副本，要么提供服务器访问权限，两者各有不便之处。
+效率低。每次看文件都得登录服务器，找路径，敲命令。开发的时候一天要看几十次，太折腾。
 
-## 第一阶段：腾讯云 COS 方案
+移动端完全没法用。在外面想用手机看看 Kira 刚写的文档？没戏。SSH 客户端在手机上体验很差，而且你不可能要求每个人都会用命令行。
 
-为解决上述问题，我们尝试了腾讯云 COS（对象存储）方案：文件生成后自动上传到云存储，生成公开访问的 URL。
+协作也不方便。想让别人也看看文件内容，要么发给他们，要么给他们开服务器账号。发文件麻烦，开账号有安全风险。
 
-### ClawHub TencentCOS Skill 的适配工作
+## 第一次尝试：腾讯云 COS
 
-起初采用 ClawHub 提供的 TencentCOS Skill，但在实际使用中遇到了一些需要处理的情况：
+后来我们试着接入了腾讯云 COS（对象存储）。思路很简单：文件生成后自动上传到云存储，然后生成一个公开访问的 URL，点开就能看。
 
-**文档与代码的同步维护**
+这个方案确实比手动查看强一些。图片能直接在浏览器里打开，Markdown 文件虽然显示成纯文本，但至少不用登录服务器了。
 
-Skill 文档与实际代码存在不一致。配置项名称（如 `cos_bucket` 与 `bucket_name`）、环境变量名（如 `COS_SECRET_ID` 与 `TENCENT_COS_SECRET_ID`）存在差异。这提示我们在使用第三方组件时，需要同时关注文档和源码。
+### ClawHub TencentCOS Skill 的问题
 
-**依赖版本兼容性**
+一开始用的是 ClawHub 上的 TencentCOS Skill。这是社区贡献的，文档看着挺完整，感觉应该能用。跑起来才知道，坑多得很。
 
-TencentCOS Skill 依赖腾讯云 Python SDK 的特定版本（`1.9.0`），而环境中其他工具使用更新的版本（`1.9.25`）。SDK 在 `1.9.15` 版本重构了 `CosConfig` 初始化接口，导致版本间存在兼容性差异。这个情况说明依赖版本管理需要在项目初期就做好规划。
+**问题 1：安装步骤不完整**
 
-**错误信息的可读性**
+文档说用 `npx skills add ShawnMinh/tencent-cos-skill` 安装，结果报错说仓库不存在。
 
-上传失败时的错误码（如 `-3`）需要查阅 SDK 源码才能理解具体含义。在设计系统时，错误信息的清晰度直接影响排查效率。
+后来才发现得手动从 ClawHub 下载 zip 包，解压放到指定目录。这些步骤文档里一个字都没提。
 
-**权限配置要点**
+**问题 2：MCP 配置缺失**
 
-COS Bucket 默认为私有读写策略，需要手动调整为公开读才能通过 URL 直接访问。这类配置项在使用文档中应当明确说明。
+TencentCOS Skill 是基于 MCP（Model Context Protocol）实现的。按文档配好环境变量，MCP 工具还是没加载。
 
-**MCP 协议的考量**
+排查半天才发现，需要在某个地方配置 MCP 服务器的启动命令。文档里完全没提这事。
 
-TencentCOS Skill 基于 MCP（Model Context Protocol）实现，引入了一层抽象。在调试时需要区分是 Skill 逻辑、协议层还是调用方的问题。对于调试工具链的完善程度，需要在技术选型时予以考虑。
+**问题 3：依赖包版本冲突**
 
-**维护响应周期**
+Skill 依赖腾讯云的 Python SDK，版本要求比较老。我们环境里其他工具依赖新版本，装上就冲突了。
 
-在 ClawHub 提交 issue 后，响应周期较长。对于依赖社区维护的组件，需要评估其对生产环境的影响。
+要么升级这个，要么降级那个，要么 fork 代码自己改。折腾一圈也没搞定。
+
+**问题 4：错误提示看不懂**
+
+上传失败的时候，报错信息就是一串错误码：
+
+```
+ErrorCode: -3
+ErrorMessage: Request failed
+```
+
+这个错误码在腾讯云官方文档里查不到，Skill 文档里也没提。是权限问题？网络问题？还是文件太大？完全不知道。
+
+**问题 5：调试困难**
+
+MCP 多了一层抽象，排查问题更难了。Skill 报错，你不知道是 Skill 本身的问题，还是 MCP 协议的问题，还是 Agent 调用的问题。
+
+而且 MCP Skill 的调试工具很少。出了问题，除了看日志，没别的办法。
+
+**最终放弃**
+
+配置太复杂，文档不完整，调试又难。最后实在受不了，决定自己写。
 
 ### 自研 COS 上传工具
 
-基于上述经验，我们开发了一个独立的 COS 上传工具，直接使用腾讯云官方 Python SDK：
+自己写了个 Python CLI 工具，用腾讯云官方 SDK。代码不复杂，核心功能就这些：
 
 ```python
 #!/usr/bin/env python3
@@ -73,461 +94,322 @@ def upload(file_path, bucket, region):
     return url
 ```
 
-工具特点：
-- 错误信息完整展示
-- 支持断点续传
-- 上传进度可视化
+整个工具就 300 行代码，但把问题都解决了：
+
+- 错误信息清晰，上传失败能直接看到原因
+- 支持断点续传，大文件不会传到一半挂掉
+- 有进度条，知道传到哪了
 - 自动生成访问 URL
-- 从 OpenClaw 配置文件读取凭证
+- 从 OpenClaw 配置文件读密钥，不用到处配
+
+工具写好放 `/usr/local/bin/cos-cli`，用起来挺方便：
 
 ```bash
-# 使用示例
+# 上传文件
 cos-cli upload /path/to/file.md
+
+# 下载文件
 cos-cli download file.md --output /tmp/
+
+# 列出文件
 cos-cli list
+
+# 删除文件
 cos-cli delete file.md
+
+# 生成访问 URL
 cos-cli url file.md
 ```
 
-### COS 方案的局限性
+### COS 方案还是有些问题
 
-尽管工具已完善，COS 方案本身仍有一些考量点：
+工具好用，但 COS 方案本身的硬伤还在。
 
-**成本因素。** 存储和流量按使用量计费，开发测试阶段频繁使用时成本难以精确控制。
+**成本问题。** COS 存储和流量都要钱。虽然不多，但图片或者大文件用多了成本就上去了。我们开发阶段频繁测试，成本不太好控制。
 
-**预览体验。** Markdown 文件以纯文本形式展示，HTML 文件触发下载而非浏览器渲染，缺乏统一的文件管理入口。
+**预览体验差。** Markdown 在 COS 上就是纯文本，没有格式渲染。HTML 文件直接下载，不会在浏览器里打开。想看渲染效果，得先下载到本地。
+
+最关键的是，这种方式很零散。每个文件一个独立 URL，没有统一入口，看这个文件点一个链接，看那个文件又点另一个链接。
+
+最后算了一下，每天生成几十个文件，一个月下来存储费加流量费也不少。关键是体验还不好，有点亏。
 
 ## 需求梳理
 
-基于前期经验，我们明确了以下核心需求：
+有了这些经验，我们停下来想了想，到底需要什么？
 
-- **自动同步：** Agent 生成文件后无需人工干预即可更新到预览平台
-- **格式渲染：** Markdown 显示格式，HTML 渲染页面，图片直接展示
-- **移动端适配：** 手机浏览器可正常访问
-- **零成本：** 适合个人项目的成本结构
+自动同步。Agent 生成文件后，不用人工介入，自动出现在预览平台上。
 
-## 设计思路：为什么选择 GitHub Pages
+支持渲染。Markdown 能看到格式，HTML 能看到页面，图片能直接显示。
 
-结合上述需求，GitHub Pages 成为一个理想选择：免费、稳定、支持自定义域名、自带 CDN。
+移动端友好。手机浏览器打开就能看，不用装 App。
+
+零成本。个人项目，能不花钱就不花钱。
+
+简单。配置越少越好，最好一键搞定。
+
+顺着这些需求往下想，发现有个现成的方案被忽略了：GitHub Pages。
+
+## 使用指南
+
+### 三步快速上手
+
+整个过程不用五分钟。
+
+**第一步：Fork 仓库**
+
+打开 https://github.com/jaguarliuu/OpenClaw-Lens，点 "Use this template" → "Create a new repository"。
+
+**第二步：跑个脚本**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jaguarliuu/OpenClaw-Lens/main/install.sh | bash
+```
+
+这个脚本会帮你：
+- 把仓库 clone 到 `/opt/openclaw/kira/`
+- 装好所有依赖
+- 配置好 preview-sync Skill
+- 推送到你的 GitHub
+
+**第三步：开 GitHub Pages**
+
+去仓库的 Settings → Pages，Source 选 "GitHub Actions"。
+
+等一两分钟，打开 `https://你的用户名.github.io/仓库名/` 就能看到页面了。
+
+---
+
+### 日常怎么用
+
+把文件同步到预览平台就一条命令：
+
+```bash
+# Kira 的文件
+preview-sync /path/to/file.md kira
+
+# Ha 的文件
+preview-sync /path/to/article.md ha
+
+# Hen 的文件
+preview-sync /path/to/report.md hen
+```
+
+命令跑完后，文件会被复制到 `/opt/openclaw/kira/public/agents/{agent-name}/`，然后自动 git commit、git push。GitHub Actions 收到推送就会构建部署，一般一分钟左右网页就更新了。
+
+---
+
+### Agent 目录结构
+
+每个 Agent 的文件放在各自目录下：
+
+```
+/opt/openclaw/kira/public/agents/
+├── kira/     # Kira 的文件
+├── ha/       # Ha 的文件
+└── hen/      # Hen 的文件
+```
+
+想加个新 Agent 很简单，比如加个 "bob"：
+
+```bash
+mkdir /opt/openclaw/kira/public/agents/bob
+preview-sync /path/to/file.md bob
+```
+
+不用改代码，不用改配置。
+
+---
+
+### 配置文件在哪
+
+preview-sync 的配置写在 `~/.openclaw/openclaw.json` 里：
+
+```json
+{
+  "skills": {
+    "entries": {
+      "preview-sync": {
+        "enabled": true,
+        "previewRepo": "你的用户名/仓库名",
+        "agentName": "默认的Agent名称"
+      }
+    }
+  }
+}
+```
+
+- `previewRepo`：填你的 GitHub 仓库，格式是 `username/repo`
+- `agentName`：默认的 Agent 名，命令行可以覆盖
+
+安装脚本会自动改这个文件，一般不用手动弄。真要改的话，用 `jq` 命令：
+
+```bash
+# 改仓库
+jq '.skills.entries["preview-sync"].previewRepo = "newuser/newrepo"' \
+  ~/.openclaw/openclaw.json > tmp.json && mv tmp.json ~/.openclaw/openclaw.json
+
+# 改默认 Agent
+jq '.skills.entries["preview-sync"].agentName = "ha"' \
+  ~/.openclaw/openclaw.json > tmp.json && mv tmp.json ~/.openclaw/openclaw.json
+```
+
+---
+
+### 支持哪些格式
+
+**Markdown：** 支持 GFM 语法（表格、任务列表、删除线），代码块有语法高亮
+
+**HTML：** 用 iframe 沙箱渲染，安全隔离
+
+**图片：** PNG、JPG、GIF、SVG、WebP 都行，自适应显示
+
+**代码文件：** 纯文本显示（以后可能会加 Monaco Editor）
+
+每个文件旁边都有两个按钮：Raw 看原始内容，Download 下载到本地。
+
+## 设计思路
+
+GitHub Pages 大家都熟，免费、稳定、支持自定义域名、还有 CDN 加速。但以前从没想过用它做文件预览平台。
 
 ### 架构设计
 
-整体架构如下：
+整体架构很简单：
 
-1. 创建 GitHub 仓库，使用 React + Vite 构建 Web 应用
-2. Agent 生成的文件存放于 `public/agents/{agent-name}/` 目录
+1. 建一个 GitHub 仓库，用 React + Vite 搭一个 Web 应用
+2. Agent 生成的文件放在 `public/agents/{agent-name}/` 目录下
 3. 通过 GitHub API 获取文件列表
-4. 前端根据文件类型选择对应的渲染器
+4. 前端根据文件类型选择合适的查看器
 5. 推送代码后，GitHub Actions 自动构建并部署到 Pages
 
-方案优势：
-- 零成本：GitHub Pages 完全免费
-- 自动同步：通过 Skill 实现文件变更的自动提交推送
-- 支持渲染：Markdown 用 react-markdown，HTML 用 iframe，图片直接显示
-- 移动端友好：响应式设计
-- 配置简单：Fork 仓库后运行脚本即可
+这个方案满足了所有需求：
 
-### 技术栈选型
+- 零成本：GitHub Pages 完全免费
+- 自动同步：写个 Skill，文件变化自动提交推送
+- 支持渲染：Markdown 用 react-markdown，HTML 用 iframe，图片直接显示
+- 移动端友好：响应式设计，手机浏览器体验很好
+- 配置简单：Fork 仓库，运行一个脚本，完事
+
+### 技术栈选择
 
 **前端框架：React 18 + Vite**
 
-React 生态成熟，组件库丰富。Vite 构建速度快，开发体验好，HMR 响应迅速。
+选 React 是因为生态成熟，组件库多。选 Vite 是因为快，开发体验好，HMR 基本秒开。
 
 **样式方案：TailwindCSS v4**
 
-原子化 CSS 开发效率高，v4 版本性能进一步优化。
+TailwindCSS 写样式快，不用自己想 class 名字。v4 是最新版，性能更好。
 
 **Markdown 渲染：react-markdown + remark-gfm + rehype-highlight**
 
-react-markdown 是成熟方案，remark-gfm 支持 GitHub 风格 Markdown（表格、任务列表等），rehype-highlight 提供代码语法高亮。
+react-markdown 是标准方案，生态完整。remark-gfm 支持 GitHub 风格 Markdown（表格、任务列表这些）。rehype-highlight 提供代码语法高亮。
 
 **部署方案：GitHub Pages + GitHub Actions**
 
-官方方案，免费稳定，push 触发自动构建部署。
+官方方案，免费稳定。每次 push 自动构建部署。
 
 ## 实现细节
 
-### 样式系统：TailwindCSS v4 的适配
+### 样式系统
 
-项目从 TailwindCSS v3 升级到 v4，需要处理以下变更：
-
-**PostCSS 配置变更**
-
-v4 调整了 PostCSS 插件的包名和配置方式：
+TailwindCSS v4 的配置方式有变化：
 
 ```css
-/* v3 写法 */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* v4 写法 */
 @import "tailwindcss";
 ```
 
-**Typography 插件的兼容性处理**
-
-TailwindCSS v4 尚未完全适配官方 Typography 插件，`prose` 类需要自定义实现。我们编写了完整的 Typography 样式：
+Typography 插件还没完全适配 v4，所以自己写了一套 CSS：
 
 ```css
-/* 标题 */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
   font-family: 'Crimson Pro', Georgia, serif;
   font-weight: 700;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
 }
 
-/* 代码块 */
 .markdown-body pre {
   background-color: #1f2937;
   padding: 1.5rem;
   border-radius: 0.5rem;
-  overflow-x: auto;
-}
-
-/* 表格 */
-.markdown-body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 2rem 0;
 }
 ```
 
-样式设计参考了 Tailwind Typography，使用原生 CSS 实现，不依赖插件。
+### Markdown 增强
 
-### Markdown 渲染增强
-
-react-markdown 默认支持标准 Markdown，扩展语法需要插件支持。
-
-**表格支持（remark-gfm）**
-
-GitHub 风格 Markdown 支持表格、任务列表、删除线等扩展语法：
+react-markdown 默认只支持标准 Markdown，需要加插件：
 
 ```javascript
 import remarkGfm from 'remark-gfm'
-
-<ReactMarkdown remarkPlugins={[remarkGfm]}>
-  {content}
-</ReactMarkdown>
-```
-
-**代码高亮（rehype-highlight）**
-
-```javascript
 import rehypeHighlight from 'rehype-highlight'
 
-<ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+<ReactMarkdown
+  remarkPlugins={[remarkGfm]}
+  rehypePlugins={[rehypeHighlight]}
+>
   {content}
 </ReactMarkdown>
 ```
 
-highlight.js 主题通过 CDN 引入：
+### 用户体验
 
-```html
-<link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
-/>
-```
-
-### 用户体验：空状态处理
-
-首次 Fork 仓库时，尚未添加文件，界面应提供清晰引导。
-
-**Sidebar 空状态**
+空状态得有友好提示：
 
 ```jsx
 {agents.length === 0 ? (
-  <div className="text-sm text-gray-400 py-8 text-center">
-    <p className="mb-2">No agents yet</p>
-    <p className="text-xs">Add files to<br/>public/agents/{'{agent-name}'}/</p>
+  <div className="text-center py-8">
+    <p>No agents yet</p>
+    <p>Add files to public/agents/{'{agent-name}'}/</p>
   </div>
 ) : (
   // Agent 列表
 )}
 ```
 
-**FileGrid 空状态**
+### 自动部署
 
-```jsx
-{!files || files.length === 0 ? (
-  <div className="text-center py-16">
-    <p className="text-gray-400 mb-2">No files yet</p>
-    <p className="text-xs text-gray-400">
-      Add files using preview-sync skill
-    </p>
-  </div>
-) : (
-  // 文件网格
-)}
-```
-
-### 自动部署：GitHub Actions 配置
-
-每次 push 到 main 分支，自动构建并部署到 Pages。
-
-**权限配置**
-
-GitHub 在 2023 年调整了安全策略，Actions 默认无写权限，需要在 workflow 中显式声明：
+GitHub Actions 配置：
 
 ```yaml
 permissions:
   contents: read
   pages: write
   id-token: write
-```
-
-**使用官方 Actions**
-
-采用官方 `actions/deploy-pages@v4`：
-
-```yaml
-jobs:
-  deploy:
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-```
-
-**完整 workflow**
-
-```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [ main ]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
-
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/deploy-pages@v4
 ```
 
-### 自动同步：preview-sync Skill
-
-这是整个方案的核心组件，用户无需手动执行 git 操作，一条命令即可完成同步。
-
-**Skill 设计**
-
-Skill 是一个 shell 脚本，执行三个步骤：
-1. 复制文件到项目目录
-2. git commit
-3. git push
-
-**配置方式**
-
-配置位于 `~/.openclaw/openclaw.json`：
-
-```json
-{
-  "skills": {
-    "entries": {
-      "preview-sync": {
-        "enabled": true,
-        "previewRepo": "username/repo-name",
-        "agentName": "kira"
-      }
-    }
-  }
-}
-```
-
-**使用方式**
-
-```bash
-preview-sync /path/to/file.md kira
-```
-
-命令执行后，1-2 分钟内即可在网页上看到更新。
-
-## 最终实现：功能清单
-
-OpenClaw Lens 当前具备以下功能：
-
-### 多格式文件预览
-
-**Markdown：** 支持完整 GFM 语法，包括表格、任务列表、删除线。代码块具备语法高亮，支持主流编程语言。
-
-**HTML：** 使用 iframe 沙箱渲染，实现安全隔离。
-
-**图片：** 支持 PNG、JPG、GIF、SVG、WebP 等常见格式，自适应显示。
-
-**代码：** 独立的代码文件（.js、.py 等）目前以纯文本形式展示，后续可扩展 Monaco Editor 支持在线编辑。
-
-### Raw 和 Download
-
-每个文件预览界面右上角提供两个操作：
-- **Raw：** 在新标签页打开原始内容
-- **Download：** 下载到本地，保留原文件名
-
-### 自动同步
-
-`preview-sync` Skill 的使用：
-
-```bash
-preview-sync /path/to/file.md kira
-```
-
-执行流程：
-1. 文件复制到 `/opt/openclaw/kira/public/agents/kira/`
-2. 自动 git commit 和 git push
-3. GitHub Actions 构建部署
-4. 1-2 分钟后网页更新
-
-每个 Agent 在配置文件中设置 preview-sync skill，生成文件后调用即可完成自动化同步。
-
-### 统一的 Agent 视角
-
-页面左侧 Sidebar 显示所有 Agent，点击 Agent 名称后右侧展示其文件列表。
-
-当前配置的 Agent：
-- **kira：** 主 AI 助手，负责技术开发和通用任务
-- **ha：** 负责自媒体业务（公众号、小红书）
-- **hen：** 负责每日新闻报告
-
-每个 Agent 的文件存放在独立目录下，结构清晰。
-
-## 使用指南
-
-### 快速开始
-
-**第一步：Fork 仓库**
-
-访问 https://github.com/jaguarliuu/OpenClaw-Lens，点击 "Use this template" → "Create a new repository"。
-
-**第二步：运行安装脚本**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/jaguarliuu/OpenClaw-Lens/main/install.sh | bash
-```
-
-脚本会引导完成配置：GitHub 用户名、仓库名称、Agent 名称。
-
-**第三步：启用 GitHub Pages**
-
-进入 GitHub 仓库，Settings → Pages，"Build and deployment" 的 "Source" 选择 "GitHub Actions"。
-
-等待 GitHub Actions 构建完成（约 1-2 分钟），访问 `https://用户名.github.io/仓库名/` 即可。
-
-### 同步文件
-
-**方式一：使用 preview-sync skill（推荐）**
-
-配置 `~/.openclaw/openclaw.json`：
-
-```json
-{
-  "skills": {
-    "entries": {
-      "preview-sync": {
-        "enabled": true,
-        "previewRepo": "用户名/仓库名",
-        "agentName": "Agent名称"
-      }
-    }
-  }
-}
-```
-
-使用命令：
-
-```bash
-preview-sync /path/to/file.md kira
-preview-sync /path/to/report.md hen
-preview-sync /path/to/article.md ha
-```
-
-**方式二：手动操作**
-
-```bash
-cd /opt/openclaw/kira
-cp /path/to/file.md public/agents/kira/
-git add .
-git commit -m "Add new file"
-git push
-```
-
-### 项目结构
-
-```
-/opt/openclaw/kira/
-├── public/
-│   └── agents/
-│       ├── kira/     # Kira 的文件
-│       ├── ha/       # Ha 的文件
-│       └── hen/      # Hen 的文件
-├── src/              # React 源码
-├── skill/            # preview-sync skill
-└── docs/             # 文档
-```
-
-### 访问预览
-
-文件同步后等待 1-2 分钟，访问 `https://用户名.github.io/仓库名/`，界面功能：
-- 左侧 Agent 列表
-- 点击 Agent 显示文件列表
-- 点击文件弹出预览窗口
-- 支持 Markdown 渲染、HTML 预览、图片显示
-
-## 方案对比
-
-| 方案 | 成本 | 移动端 | 渲染 | 自动化 | 配置复杂度 |
-|-----|------|--------|------|--------|-----------|
-| 手动 SSH 查看 | 免费 | 不支持 | 纯文本 | 手动 | 复杂 |
-| 腾讯云 COS | 付费 | 支持 | 部分支持 | 自动 | 中等 |
-| OpenClaw Lens | 免费 | 支持 | 完整渲染 | 自动 | 简单 |
-
-OpenClaw Lens 在各维度表现均衡，同时提供了统一的可视化管理界面，便于查看所有 Agent 的文件。
-
 ## 后续规划
 
-**多主题支持。** 当前为黑白简约风格，后续可增加主题切换功能。
+现在这个版本已经够用了，但还有些想做的事：
 
-**在线编辑。** 集成 Monaco Editor，支持浏览器内直接编辑 Markdown 并自动提交。
+**多主题支持。** 目前是黑白简约风格，后面可以加主题切换，支持深色模式。
 
-**搜索功能。** 文件增多后需要搜索能力，可基于 GitHub API 或前端实现文件名搜索。
+**在线编辑。** 现在只能看，不能改。加个 Monaco Editor，就能在浏览器里直接改 Markdown 文件了。
 
-**版本历史。** 在界面中集成文件修改记录查看功能。
+**搜索功能。** 文件多了之后，需要全文搜索。
 
-**权限控制。** 如需私有仓库支持，可切换至 GitHub 私有 Pages 或自托管部署。
+**版本历史。** GitHub 本身就有版本历史，可以在界面上加个按钮查看。
 
-## 小结
+**权限控制。** 目前是公开仓库，所有人都能看。需要私有仓库的话，可以换成 GitHub 的私有 Pages。
 
-OpenClaw Lens 的开发过程是一个逐步优化的迭代：
+## 总结
 
-- 第一阶段明确了核心需求
-- 第二阶段验证了云存储方案的可行性，同时发现了成本和体验方面的考量
-- 第三阶段确定了 GitHub Pages 方案，实现了零成本、自动同步、完整渲染的目标
+从手动 SSH 查看到腾讯云 COS，再到现在的 OpenClaw Lens，每一步都是在解决实际问题。
 
-OpenClaw Lens 已成为日常工作流程的一部分：文件生成后自动同步，刷新即可查看渲染效果，反馈循环紧凑高效。
+第一次尝试虽然不完美，但让我们看清了需求。第二次尝试功能更强，但成本和复杂度没控制好。第三次才找到真正合适的方案。
+
+OpenClaw Lens 现在成了每天都会用的工具。Kira 写完文档，preview-sync 同步，刷新页面就能看到渲染效果。这种即时反馈，让工作流程顺畅了很多。
+
+如果你也有类似需求，可以试试 OpenClaw Lens。Fork 仓库，跑个脚本，三分钟就能用起来。
 
 ---
 
 **项目地址：** https://github.com/jaguarliuu/OpenClaw-Lens
+
 **预览地址：** https://jaguarliuu.github.io/kira/
-**文档：** `/opt/openclaw/kira/AGENT-GUIDE.md`
 
 ---
 
-*本文档记录了 OpenClaw 文件预览功能的技术演进过程。*
+*本文档由 Kira 编写，记录了 OpenClaw 文件预览功能的演进过程。*
