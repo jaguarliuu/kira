@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦞 龙虾小馆 - WebMCP Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logo {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, #ff6b6b, #feca57);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1.1rem;
+    }
+
+    .webmcp-badge {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Section styles */
+    .section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Menu styles */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .menu-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .menu-item:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+
+    .menu-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.5rem;
+    }
+
+    .menu-item-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .menu-item-price {
+      color: #feca57;
+      font-weight: 600;
+    }
+
+    .menu-item-desc {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .menu-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.05);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    /* Form styles */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #ccc;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* Cart styles */
+    .cart {
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .cart-items {
+      margin-bottom: 1.5rem;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .cart-item-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .cart-item-quantity {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cart-item-quantity button {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .cart-item-quantity span {
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .cart-total-price {
+      color: #feca57;
+    }
+
+    /* Tools panel */
+    .tools-panel {
+      background: rgba(118, 75, 162, 0.1);
+      border: 1px solid rgba(118, 75, 162, 0.3);
+    }
+
+    .tools-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .tool-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border-left: 4px solid #764ba2;
+    }
+
+    .tool-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .tool-card-name {
+      font-family: 'Monaco', 'Consolas', monospace;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .tool-card-status {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+      border-radius: 10px;
+    }
+
+    .tool-card-desc {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .tool-card-schema {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 0.8rem;
+      color: #aaa;
+      overflow-x: auto;
+    }
+
+    /* Status messages */
+    .status-message {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      background: rgba(46, 204, 113, 0.9);
+      color: white;
+      border-radius: 12px;
+      font-weight: 500;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .status-message.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .status-message.error {
+      background: rgba(231, 76, 60, 0.9);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">🦞</div>
+      <h1>龙虾小馆</h1>
+      <p class="subtitle">WebMCP 智能餐厅预订演示</p>
+      <span class="webmcp-badge">🔌 WebMCP Enabled</span>
+    </header>
+
+    <!-- WebMCP Tools Panel -->
+    <div class="section tools-panel">
+      <h2 class="section-title">🔧 已暴露的 WebMCP 工具</h2>
+      <div class="tools-list">
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-card-name">get_menu</span>
+            <span class="tool-card-status">已注册</span>
+          </div>
+          <p class="tool-card-desc">获取餐厅菜单列表</p>
+          <div class="tool-card-schema">
+Input: {} 
+Returns: [{ id, name, price, description, category }]
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-card-name">add_to_cart</span>
+            <span class="tool-card-status">已注册</span>
+          </div>
+          <p class="tool-card-desc">将菜品添加到购物车</p>
+          <div class="tool-card-schema">
+Input: { item_id: string, quantity: number }
+Returns: { success: boolean, cart_total: number }
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-card-name">remove_from_cart</span>
+            <span class="tool-card-status">已注册</span>
+          </div>
+          <p class="tool-card-desc">从购物车移除菜品</p>
+          <div class="tool-card-schema">
+Input: { item_id: string }
+Returns: { success: boolean, cart_total: number }
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-card-name">get_cart</span>
+            <span class="tool-card-status">已注册</span>
+          </div>
+          <p class="tool-card-desc">获取当前购物车内容</p>
+          <div class="tool-card-schema">
+Input: {} 
+Returns: { items: [], total: number, item_count: number }
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-card-name">make_reservation</span>
+            <span class="tool-card-status">已注册</span>
+          </div>
+          <p class="tool-card-desc">预订餐厅座位</p>
+          <div class="tool-card-schema">
+Input: { 
+  name: string, 
+  phone: string, 
+  date: string, 
+  time: string, 
+  party_size: number,
+  special_requests?: string 
+}
+Returns: { success: boolean, reservation_id: string }
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-card-name">check_availability</span>
+            <span class="tool-card-status">已注册</span>
+          </div>
+          <p class="tool-card-desc">检查指定日期时间是否有空位</p>
+          <div class="tool-card-schema">
+Input: { date: string, time: string, party_size: number }
+Returns: { available: boolean, slots: string[] }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu Section -->
+    <div class="section">
+      <h2 class="section-title">🍽️ 菜单</h2>
+      <div class="menu-grid" id="menuGrid">
+        <!-- 动态生成 -->
+      </div>
+    </div>
+
+    <!-- Cart Section -->
+    <div class="section cart">
+      <h2 class="section-title">🛒 购物车</h2>
+      <div class="cart-items" id="cartItems">
+        <p style="color: #888; text-align: center;">购物车是空的</p>
+      </div>
+      <div class="cart-total">
+        <span>总计</span>
+        <span class="cart-total-price" id="cartTotal">¥0</span>
+      </div>
+    </div>
+
+    <!-- Reservation Form -->
+    <div class="section">
+      <h2 class="section-title">📅 预订座位</h2>
+      <form id="reservationForm" tool-name="make_reservation" tool-description="预订餐厅座位">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">姓名</label>
+            <input type="text" id="name" name="name" required 
+                   tool-param-description="预订人姓名">
+          </div>
+          <div class="form-group">
+            <label for="phone">电话</label>
+            <input type="tel" id="phone" name="phone" required
+                   tool-param-description="联系电话">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date">日期</label>
+            <input type="date" id="date" name="date" required
+                   tool-param-description="预订日期 (YYYY-MM-DD)">
+          </div>
+          <div class="form-group">
+            <label for="time">时间</label>
+            <select id="time" name="time" required
+                    tool-param-description="预订时间">
+              <option value="">选择时间</option>
+              <option value="11:00">11:00</option>
+              <option value="12:00">12:00</option>
+              <option value="13:00">13:00</option>
+              <option value="17:00">17:00</option>
+              <option value="18:00">18:00</option>
+              <option value="19:00">19:00</option>
+              <option value="20:00">20:00</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="partySize">用餐人数</label>
+          <input type="number" id="partySize" name="party_size" min="1" max="20" required
+                 tool-param-description="用餐人数 (1-20)">
+        </div>
+        <div class="form-group">
+          <label for="specialRequests">特殊要求</label>
+          <textarea id="specialRequests" name="special_requests" rows="3"
+                    tool-param-description="特殊要求（可选）"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">
+          确认预订
+        </button>
+      </form>
+    </div>
+
+    <!-- Instructions -->
+    <div class="section" style="background: rgba(255,255,255,0.02);">
+      <h2 class="section-title">💡 如何测试</h2>
+      <ol style="color: #888; line-height: 2;">
+        <li>使用 Chrome 145+ 并启用 <code>chrome://flags</code> 中的 WebMCP</li>
+        <li>安装 <a href="https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd" style="color: #667eea;">Model Context Tool Inspector</a> 扩展</li>
+        <li>刷新页面，点击扩展图标查看已注册的工具</li>
+        <li>尝试在 AI Agent 中说：「帮我预订明天晚上 7 点 4 个人的位置」</li>
+        <li>或者说：「给我推荐几个招牌菜，然后把麻辣龙虾加 2 份到购物车」</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="status-message" id="statusMessage"></div>
+
+  <script>
+    // ========== 数据 ==========
+    const menuData = [
+      { id: 'lobster-spicy', name: '麻辣龙虾', price: 188, description: '招牌必点，秘制麻辣酱', category: '招牌' },
+      { id: 'lobster-garlic', name: '蒜蓉龙虾', price: 178, description: '蒜香浓郁，回味无穷', category: '招牌' },
+      { id: 'lobster-steamed', name: '清蒸龙虾', price: 168, description: '原汁原味，鲜美至极', category: '招牌' },
+      { id: 'shrimp-crispy', name: '椒盐皮皮虾', price: 98, description: '酥脆可口，下酒绝配', category: '海鲜' },
+      { id: 'crab-curry', name: '咖喱蟹', price: 128, description: '泰式风味，香浓可口', category: '海鲜' },
+      { id: 'clams-spicy', name: '辣炒花蛤', price: 48, description: '鲜辣开胃，量大实惠', category: '小炒' },
+      { id: 'tofu-mapo', name: '麻婆豆腐', price: 38, description: '麻辣鲜香，经典川味', category: '小炒' },
+      { id: 'veggie-seasonal', name: '时蔬', price: 28, description: '每日新鲜时令蔬菜', category: '素菜' },
+    ];
+
+    const cart = new Map();
+
+    // ========== 工具函数 ==========
+    function showMessage(text, isError = false) {
+      const el = document.getElementById('statusMessage');
+      el.textContent = text;
+      el.className = `status-message show ${isError ? 'error' : ''}`;
+      setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function formatPrice(price) {
+      return `¥${price}`;
+    }
+
+    // ========== UI 渲染 ==========
+    function renderMenu() {
+      const grid = document.getElementById('menuGrid');
+      grid.innerHTML = menuData.map(item => `
+        <div class="menu-item" data-id="${item.id}">
+          <div class="menu-item-header">
+            <span class="menu-item-name">${item.name}</span>
+            <span class="menu-item-price">${formatPrice(item.price)}</span>
+          </div>
+          <p class="menu-item-desc">${item.description}</p>
+          <div class="menu-item-actions">
+            <button class="btn btn-primary" onclick="addToCart('${item.id}')">加入购物车</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      const totalEl = document.getElementById('cartTotal');
+      
+      if (cart.size === 0) {
+        container.innerHTML = '<p style="color: #888; text-align: center;">购物车是空的</p>';
+        totalEl.textContent = '¥0';
+        return;
+      }
+
+      let total = 0;
+      let html = '';
+      
+      cart.forEach((quantity, itemId) => {
+        const item = menuData.find(m => m.id === itemId);
+        if (item) {
+          const subtotal = item.price * quantity;
+          total += subtotal;
+          html += `
+            <div class="cart-item">
+              <div class="cart-item-info">
+                <span>${item.name}</span>
+                <span style="color: #888;">${formatPrice(item.price)} ×</span>
+              </div>
+              <div class="cart-item-quantity">
+                <button onclick="updateCart('${itemId}', -1)">-</button>
+                <span>${quantity}</span>
+                <button onclick="updateCart('${itemId}', 1)">+</button>
+              </div>
+              <span style="color: #feca57;">${formatPrice(subtotal)}</span>
+            </div>
+          `;
+        }
+      });
+
+      container.innerHTML = html;
+      totalEl.textContent = formatPrice(total);
+    }
+
+    // ========== 购物车操作 ==========
+    function addToCart(itemId, quantity = 1) {
+      const current = cart.get(itemId) || 0;
+      cart.set(itemId, current + quantity);
+      renderCart();
+      
+      const item = menuData.find(m => m.id === itemId);
+      showMessage(`已添加 ${item?.name || itemId}`);
+    }
+
+    function updateCart(itemId, delta) {
+      const current = cart.get(itemId) || 0;
+      const newQty = current + delta;
+      
+      if (newQty <= 0) {
+        cart.delete(itemId);
+      } else {
+        cart.set(itemId, newQty);
+      }
+      renderCart();
+    }
+
+    function removeFromCart(itemId) {
+      cart.delete(itemId);
+      renderCart();
+    }
+
+    function getCartTotal() {
+      let total = 0;
+      cart.forEach((quantity, itemId) => {
+        const item = menuData.find(m => m.id === itemId);
+        if (item) total += item.price * quantity;
+      });
+      return total;
+    }
+
+    // ========== 预订表单 ==========
+    document.getElementById('reservationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = {
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        date: formData.get('date'),
+        time: formData.get('time'),
+        party_size: parseInt(formData.get('party_size')),
+        special_requests: formData.get('special_requests') || undefined
+      };
+
+      // 模拟预订
+      const reservationId = 'R' + Date.now().toString(36).toUpperCase();
+      showMessage(`预订成功！预订号：${reservationId}`);
+      e.target.reset();
+    });
+
+    // ========== WebMCP 工具注册 ==========
+    async function registerWebMCPTools() {
+      // 检查浏览器是否支持 WebMCP
+      if (!navigator.modelContext) {
+        console.log('WebMCP not supported in this browser');
+        return;
+      }
+
+      try {
+        // 工具 1: 获取菜单
+        await navigator.modelContext.registerTool({
+          name: 'get_menu',
+          description: '获取龙虾小馆的完整菜单列表',
+          inputSchema: {
+            type: 'object',
+            properties: {}
+          },
+          execute: async () => {
+            return {
+              success: true,
+              menu: menuData,
+              message: '菜单获取成功'
+            };
+          }
+        });
+
+        // 工具 2: 添加到购物车
+        await navigator.modelContext.registerTool({
+          name: 'add_to_cart',
+          description: '将指定菜品添加到购物车',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              item_id: {
+                type: 'string',
+                description: '菜品ID，可选值: lobster-spicy, lobster-garlic, lobster-steamed, shrimp-crispy, crab-curry, clams-spicy, tofu-mapo, veggie-seasonal'
+              },
+              quantity: {
+                type: 'number',
+                description: '添加数量，默认为1'
+              }
+            },
+            required: ['item_id']
+          },
+          execute: async ({ item_id, quantity = 1 }) => {
+            const item = menuData.find(m => m.id === item_id);
+            if (!item) {
+              return { success: false, error: '未找到该菜品' };
+            }
+            
+            const current = cart.get(item_id) || 0;
+            cart.set(item_id, current + quantity);
+            renderCart();
+            
+            return {
+              success: true,
+              item: item.name,
+              quantity_added: quantity,
+              total_quantity: cart.get(item_id),
+              cart_total: getCartTotal()
+            };
+          }
+        });
+
+        // 工具 3: 从购物车移除
+        await navigator.modelContext.registerTool({
+          name: 'remove_from_cart',
+          description: '从购物车中移除指定菜品',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              item_id: {
+                type: 'string',
+                description: '要移除的菜品ID'
+              }
+            },
+            required: ['item_id']
+          },
+          execute: async ({ item_id }) => {
+            if (!cart.has(item_id)) {
+              return { success: false, error: '购物车中没有该菜品' };
+            }
+            
+            const item = menuData.find(m => m.id === item_id);
+            cart.delete(item_id);
+            renderCart();
+            
+            return {
+              success: true,
+              removed_item: item?.name,
+              cart_total: getCartTotal()
+            };
+          }
+        });
+
+        // 工具 4: 获取购物车
+        await navigator.modelContext.registerTool({
+          name: 'get_cart',
+          description: '获取当前购物车的内容和总价',
+          inputSchema: {
+            type: 'object',
+            properties: {}
+          },
+          execute: async () => {
+            const items = [];
+            cart.forEach((quantity, itemId) => {
+              const item = menuData.find(m => m.id === itemId);
+              if (item) {
+                items.push({
+                  id: itemId,
+                  name: item.name,
+                  price: item.price,
+                  quantity,
+                  subtotal: item.price * quantity
+                });
+              }
+            });
+            
+            return {
+              success: true,
+              items,
+              total: getCartTotal(),
+              item_count: items.length
+            };
+          }
+        });
+
+        // 工具 5: 预订座位
+        await navigator.modelContext.registerTool({
+          name: 'make_reservation',
+          description: '预订餐厅座位',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: '预订人姓名'
+              },
+              phone: {
+                type: 'string',
+                description: '联系电话'
+              },
+              date: {
+                type: 'string',
+                description: '预订日期，格式 YYYY-MM-DD'
+              },
+              time: {
+                type: 'string',
+                description: '预订时间，可选: 11:00, 12:00, 13:00, 17:00, 18:00, 19:00, 20:00'
+              },
+              party_size: {
+                type: 'number',
+                description: '用餐人数 (1-20)'
+              },
+              special_requests: {
+                type: 'string',
+                description: '特殊要求（可选）'
+              }
+            },
+            required: ['name', 'phone', 'date', 'time', 'party_size']
+          },
+          execute: async ({ name, phone, date, time, party_size, special_requests }) => {
+            // 验证
+            if (party_size < 1 || party_size > 20) {
+              return { success: false, error: '用餐人数需在 1-20 人之间' };
+            }
+            
+            // 生成预订号
+            const reservationId = 'R' + Date.now().toString(36).toUpperCase();
+            
+            return {
+              success: true,
+              reservation_id: reservationId,
+              details: {
+                name,
+                phone,
+                date,
+                time,
+                party_size,
+                special_requests
+              },
+              message: `预订成功！${name} 您好，您已成功预订 ${date} ${time} 的 ${party_size} 人座位，预订号：${reservationId}`
+            };
+          }
+        });
+
+        // 工具 6: 检查空位
+        await navigator.modelContext.registerTool({
+          name: 'check_availability',
+          description: '检查指定日期时间是否有空位',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              date: {
+                type: 'string',
+                description: '预订日期，格式 YYYY-MM-DD'
+              },
+              time: {
+                type: 'string',
+                description: '预订时间'
+              },
+              party_size: {
+                type: 'number',
+                description: '用餐人数'
+              }
+            },
+            required: ['date', 'time', 'party_size']
+          },
+          execute: async ({ date, time, party_size }) => {
+            // 模拟检查逻辑
+            const available = Math.random() > 0.2; // 80% 概率有空位
+            
+            return {
+              available,
+              date,
+              time,
+              party_size,
+              alternative_times: available ? [] : ['17:00', '18:00', '20:00'],
+              message: available 
+                ? `${date} ${time} 有 ${party_size} 人空位` 
+                : `${date} ${time} 已满，建议选择其他时间`
+            };
+          }
+        });
+
+        console.log('WebMCP tools registered successfully');
+      } catch (error) {
+        console.error('Failed to register WebMCP tools:', error);
+      }
+    }
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMenu();
+      renderCart();
+      registerWebMCPTools();
+      
+      // 设置日期选择器的最小值为今天
+      const dateInput = document.getElementById('date');
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.min = today;
+    });
+  </script>
+</body>
+</html>
