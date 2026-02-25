@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebMCP 智能表单对比 Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    .webmcp-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* 对比面板 */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .method-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+
+    .method-card:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-4px);
+    }
+
+    .method-card.active {
+      border-color: #667eea;
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .method-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .method-icon {
+      font-size: 1.5rem;
+    }
+
+    .method-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .method-stats {
+      display: grid;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .stat-value {
+      font-weight: 600;
+    }
+
+    .stat-value.good {
+      color: #2ecc71;
+    }
+
+    .stat-value.bad {
+      color: #e74c3c;
+    }
+
+    .stat-value.medium {
+      color: #f39c12;
+    }
+
+    .method-actions {
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.02);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* 表单区域 */
+    .form-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .form-title {
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .form-group input::placeholder {
+      color: #666;
+    }
+
+    /* 技能复选框 */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem;
+    }
+
+    .skill-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .skill-checkbox:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .skill-checkbox.selected {
+      background: rgba(102, 126, 234, 0.2);
+      border-color: #667eea;
+    }
+
+    .skill-checkbox input {
+      width: auto;
+    }
+
+    /* 日志面板 */
+    .log-panel {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .log-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      color: #888;
+    }
+
+    .log-entry {
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      border-left: 3px solid #666;
+    }
+
+    .log-entry.webmcp {
+      border-color: #2ecc71;
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .log-entry.screenshot {
+      border-color: #e74c3c;
+      background: rgba(231, 76, 60, 0.1);
+    }
+
+    .log-entry.manual {
+      border-color: #3498db;
+      background: rgba(52, 152, 219, 0.1);
+    }
+
+    .log-time {
+      color: #888;
+      margin-right: 1rem;
+    }
+
+    .log-method {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .log-method.webmcp {
+      color: #2ecc71;
+    }
+
+    .log-method.screenshot {
+      color: #e74c3c;
+    }
+
+    .log-method.manual {
+      color: #3498db;
+    }
+
+    /* 结果展示 */
+    .result-panel {
+      background: rgba(46, 204, 113, 0.1);
+      border: 1px solid #2ecc71;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-title {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .result-content {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 1rem;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+
+    /* WebMCP 工具面板 */
+    .tools-panel {
+      background: rgba(118, 75, 162, 0.1);
+      border: 1px solid rgba(118, 75, 162, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .tools-title {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .tool-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .tool-name {
+      font-family: monospace;
+      color: #667eea;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .tool-desc {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 0.5rem;
+    }
+
+    .tool-schema {
+      font-size: 0.75rem;
+      color: #666;
+      background: rgba(0,0,0,0.2);
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    /* 统计面板 */
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .overview-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .overview-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .overview-label {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .skills-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .stats-overview {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">📝</div>
+      <h1>WebMCP 智能表单对比 Demo</h1>
+      <p class="subtitle">同一个表单，三种操作方式的效率对比</p>
+      <span class="webmcp-badge">🔌 WebMCP Enabled</span>
+    </header>
+
+    <!-- 效率统计 -->
+    <div class="stats-overview">
+      <div class="overview-card">
+        <div class="overview-value" id="totalTimeWebmcp" style="color: #2ecc71;">0ms</div>
+        <div class="overview-label">WebMCP 耗时</div>
+      </div>
+      <div class="overview-card">
+        <div class="overview-value" id="totalTimeScreenshot" style="color: #e74c3c;">0ms</div>
+        <div class="overview-label">截图方式耗时</div>
+      </div>
+      <div class="overview-card">
+        <div class="overview-value" id="tokenSaved" style="color: #f39c12;">0%</div>
+        <div class="overview-label">Token 节省</div>
+      </div>
+    </div>
+
+    <!-- 操作方式对比 -->
+    <div class="comparison-grid">
+      <div class="method-card" id="webmcpCard">
+        <div class="method-header">
+          <span class="method-icon">⚡</span>
+          <span class="method-title">WebMCP 直接调用</span>
+        </div>
+        <div class="method-stats">
+          <div class="stat">
+            <span>耗时</span>
+            <span class="stat-value good" id="webmcpTime">~2ms</span>
+          </div>
+          <div class="stat">
+            <span>Token</span>
+            <span class="stat-value good" id="webmcpTokens">~500</span>
+          </div>
+          <div class="stat">
+            <span>成功率</span>
+            <span class="stat-value good">100%</span>
+          </div>
+        </div>
+        <div class="method-actions">
+          <button class="btn btn-primary" onclick="submitViaWebMCP()">⚡ WebMCP 一键提交</button>
+        </div>
+      </div>
+
+      <div class="method-card" id="screenshotCard">
+        <div class="method-header">
+          <span class="method-icon">📸</span>
+          <span class="method-title">截图 + 点击模拟</span>
+        </div>
+        <div class="method-stats">
+          <div class="stat">
+            <span>耗时</span>
+            <span class="stat-value bad" id="screenshotTime">30-60s</span>
+          </div>
+          <div class="stat">
+            <span>Token</span>
+            <span class="stat-value bad" id="screenshotTokens">~50,000</span>
+          </div>
+          <div class="stat">
+            <span>成功率</span>
+            <span class="stat-value medium">~85%</span>
+          </div>
+        </div>
+        <div class="method-actions">
+          <button class="btn btn-primary" onclick="simulateScreenshot()" disabled>🚧 模拟中...</button>
+        </div>
+      </div>
+
+      <div class="method-card" id="manualCard">
+        <div class="method-header">
+          <span class="method-icon">👤</span>
+          <span class="method-title">人工手动填写</span>
+        </div>
+        <div class="method-stats">
+          <div class="stat">
+            <span>耗时</span>
+            <span class="stat-value medium" id="manualTime">60-120s</span>
+          </div>
+          <div class="stat">
+            <span>脑力</span>
+            <span class="stat-value medium">中</span>
+          </div>
+          <div class="stat">
+            <span>成功率</span>
+            <span class="stat-value good">99%</span>
+          </div>
+        </div>
+        <div class="method-actions">
+          <button class="btn btn-primary" disabled>👨‍💻 人工操作</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WebMCP 工具面板 -->
+    <div class="tools-panel">
+      <h2 class="tools-title">🔧 已暴露的 WebMCP 工具</h2>
+      <div class="tools-grid">
+        <div class="tool-item">
+          <div class="tool-name">submit_form</div>
+          <div class="tool-desc">提交员工入职表单</div>
+          <div class="tool-schema">name, email, department, skills[], preferences</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-name">validate_field</div>
+          <div class="tool-desc">验证单个字段</div>
+          <div class="tool-schema">field_name, value</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-name">get_depart_options</div>
+          <div class="tool-desc">获取部门列表</div>
+          <div class="tool-schema">无参数</div>
+        </div>
+        <div class="tool-item">
+          <div class="tool-name">get_skills_list</div>
+          <div class="tool-desc">获取技能列表</div>
+          <div class="tool-schema">无参数</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 表单 -->
+    <div class="form-section">
+      <h2 class="form-title">📝 员工入职表单</h2>
+      <form id="onboardingForm" tool-name="submit_form" tool-description="提交员工入职表单">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">姓名 *</label>
+            <input type="text" id="name" name="name" required placeholder="请输入姓名"
+                   tool-param-name="name" tool-param-description="员工姓名">
+          </div>
+          <div class="form-group">
+            <label for="email">邮箱 *</label>
+            <input type="email" id="email" name="email" required placeholder="name@company.com"
+                   tool-param-name="email" tool-param-description="公司邮箱">
+          </div>
+          <div class="form-group">
+            <label for="department">部门 *</label>
+            <select id="department" name="department" required
+                    tool-param-name="department" tool-param-description="所属部门">
+              <option value="">选择部门</option>
+              <option value="engineering">工程部</option>
+              <option value="product">产品部</option>
+              <option value="design">设计部</option>
+              <option value="marketing">市场部</option>
+              <option value="hr">人事部</option>
+              <option value="finance">财务部</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="position">职位 *</label>
+            <input type="text" id="position" name="position" required placeholder="如：高级工程师"
+                   tool-param-name="position" tool-param-description="职位名称">
+          </div>
+          <div class="form-group full-width">
+            <label>技能 *</label>
+            <div class="skills-grid" id="skillsGrid">
+              <!-- 动态生成 -->
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="startDate">入职日期 *</label>
+            <input type="date" id="startDate" name="start_date" required
+                   tool-param-name="start_date" tool-param-description="入职日期 YYYY-MM-DD">
+          </div>
+          <div class="form-group full-width">
+            <label for="notes">备注</label>
+            <textarea id="notes" name="notes" rows="3" placeholder="其他需要说明的事项..."
+                      tool-param-name="notes" tool-param-description="备注信息（可选）"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- 日志面板 -->
+    <div class="log-panel">
+      <div class="log-title">📋 操作日志</div>
+      <div id="logContainer">
+        <div class="log-entry manual">
+          <span class="log-time">00:00:00</span>
+          <span class="log-method manual">系统</span>
+          <span>页面已加载，WebMCP 工具已注册</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结果面板 -->
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 提交成功</div>
+      <div class="result-content" id="resultContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 数据 ==========
+    const skills = [
+      { id: 'python', name: 'Python' },
+      { id: 'javascript', name: 'JavaScript' },
+      { id: 'typescript', name: 'TypeScript' },
+      { id: 'java', name: 'Java' },
+      { id: 'go', name: 'Go' },
+      { id: 'rust', name: 'Rust' },
+      { id: 'react', name: 'React' },
+      { id: 'vue', name: 'Vue.js' },
+      { id: 'nodejs', name: 'Node.js' },
+      { id: 'sql', name: 'SQL' },
+      { id: 'docker', name: 'Docker' },
+      { id: 'kubernetes', name: 'Kubernetes' }
+    ];
+
+    const selectedSkills = new Set();
+
+    // ========== 工具函数 ==========
+    function addLog(method, message) {
+      const container = document.getElementById('logContainer');
+      const time = new Date().toLocaleTimeString('zh-CN', { hour12: '2-digit', minute: '2-digit', second: '2-digit' });
+      
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${method}`;
+      entry.innerHTML = `
+        <span class="log-time">${time}</span>
+        <span class="log-method ${method}">${getMethodLabel(method)}</span>
+        <span>${message}</span>
+      `;
+      
+      container.appendChild(entry);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function getMethodLabel(method) {
+      const labels = {
+        webmcp: 'WebMCP',
+        screenshot: '截图',
+        manual: '手动'
+      };
+      return labels[method] || method;
+    }
+
+    function showResult(data) {
+      const panel = document.getElementById('resultPanel');
+      const content = document.getElementById('resultContent');
+      panel.classList.add('show');
+      content.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function updateStats(webmcpTime, screenshotTime) {
+      const webmcpTokens = 500;
+      const screenshotTokens = 50000;
+      
+      document.getElementById('webmcpTime').textContent = `~${webmcpTime}ms`;
+      document.getElementById('webmcpTokens').textContent = `~${webmcpTokens}`;
+      document.getElementById('screenshotTime').textContent = `~${screenshotTime}s`;
+      document.getElementById('screenshotTokens').textContent = `~${screenshotTokens.toLocaleString()}`;
+      
+      document.getElementById('totalTimeWebmcp').textContent = `${webmcpTime}ms`;
+      document.getElementById('totalTimeScreenshot').textContent = `${screenshotTime}s`;
+      document.getElementById('tokenSaved').textContent = `${Math.round((1 - webmcpTokens/screenshotTokens) * 100)}%`;
+      
+      // 更新卡片状态
+      document.getElementById('webmcpCard').classList.add('active');
+    }
+
+    // ========== 技能渲染 ==========
+    function renderSkills() {
+      const grid = document.getElementById('skillsGrid');
+      grid.innerHTML = skills.map(skill => `
+        <div class="skill-checkbox" onclick="toggleSkill('${skill.id}', this)">
+          <input type="checkbox" name="skills" value="${skill.id}">
+          <span>${skill.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleSkill(skillId, element) {
+      if (selectedSkills.has(skillId)) {
+        selectedSkills.delete(skillId);
+        element.classList.remove('selected');
+      } else {
+        selectedSkills.add(skillId);
+        element.classList.add('selected');
+      }
+    }
+
+    // ========== WebMCP 提交 ==========
+    async function submitViaWebMCP() {
+      const startTime = performance.now();
+      addLog('webmcp', '开始通过 WebMCP 提交表单...');
+      
+      // 收集表单数据
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        department: document.getElementById('department').value,
+        position: document.getElementById('position').value,
+        skills: Array.from(selectedSkills),
+        start_date: document.getElementById('startDate').value,
+        notes: document.getElementById('notes').value
+      };
+
+      // 验证
+      if (!formData.name || !formData.email || !formData.department || !formData.position || formData.skills.length === 0) {
+        addLog('webmcp', '❌ 表单验证失败：请填写所有必填项');
+        return;
+      }
+
+      addLog('webmcp', `准备数据: ${JSON.stringify(formData)}`);
+      addLog('webmcp', '调用 navigator.modelContext.call("submit_form", data)');
+      
+      // 模拟 WebMCP 调用
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      const endTime = performance.now();
+      const elapsed = endTime - startTime;
+      
+      // 更新统计
+      updateStats(Math.round(elapsed), 45);
+      
+      addLog('webmcp', `✅ 提交成功！耗时 ${elapsed}ms`);
+      
+      showResult({
+        success: true,
+        employee_id: 'EMP' + Date.now().toString(36).toUpperCase(),
+        data: formData,
+        message: '员工入职表单已成功提交'
+      });
+    }
+
+    // ========== 模拟截图方式 ==========
+    async function simulateScreenshot() {
+      addLog('screenshot', '开始模拟截图方式...');
+      
+      const steps = [
+        { action: '截取页面截图', time: 1.5 },
+        { action: 'OCR 识别表单元素', time: 2 },
+        { action: '定位姓名输入框', time: 0.5 },
+        { action: '点击姓名输入框', time: 0.3 },
+        { action: '输入姓名数据', time: 0.2 },
+        { action: '定位邮箱输入框', time: 0.5 },
+        { action: '点击邮箱输入框', time: 0.3 },
+        { action: '输入邮箱数据', time: 0.2 },
+        { action: '定位部门下拉框', time: 0.5 },
+        { action: '点击部门下拉框', time: 0.3 },
+        { action: '识别下拉选项', time: 1 },
+        { action: '选择部门', time: 0.2 },
+        { action: '定位职位输入框', time: 0.5 },
+        { action: '点击职位输入框', time: 0.3 },
+        { action: '输入职位数据', time: 0.2 },
+        { action: '定位技能复选框', time: 0.5 },
+        { action: '识别复选框状态', time: 1 },
+        { action: '点击技能复选框 x 3', time: 0.6 },
+        { action: '定位入职日期输入框', time: 0.5 },
+        { action: '点击日期选择器', time: 0.3 },
+        { action: '选择日期', time: 0.2 },
+        { action: '定位提交按钮', time: 0.5 },
+        { action: '点击提交按钮', time: 0.3 },
+        { action: '等待响应', time: 2 }
+      ];
+
+      let total = 0;
+      for (const step of steps) {
+        await new Promise(resolve => setTimeout(resolve, step.time * 1000));
+        addLog('screenshot', `📸 ${step.action}...`);
+        total += step.time;
+      }
+
+      addLog('screenshot', `❌ 截图方式总耗时: ${total}秒`);
+    }
+
+    // ========== WebMCP 工具注册 ==========
+    async function registerWebMCPTools() {
+      if (!navigator.modelContext) {
+        console.log('WebMCP not supported');
+        return;
+      }
+
+      try {
+        // 工具 1: 提交表单
+        await navigator.modelContext.registerTool({
+          name: 'submit_form',
+          description: '提交员工入职表单',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: '员工姓名' },
+              email: { type: 'string', description: '公司邮箱' },
+              department: { type: 'string', description: '所属部门', enum: ['engineering', 'product', 'design', 'marketing', 'hr', 'finance'] },
+              position: { type: 'string', description: '职位名称' },
+              skills: { type: 'array', items: { type: 'string' }, description: '技能列表' },
+              start_date: { type: 'string', description: '入职日期' },
+              notes: { type: 'string', description: '备注信息' }
+            },
+            required: ['name', 'email', 'department', 'position', 'skills', 'start_date']
+          },
+          execute: async (params) => {
+            // 模拟处理
+            await new Promise(r => setTimeout(r, 100));
+            
+            return {
+              success: true,
+              employee_id: 'EMP' + Date.now().toString(36).toUpperCase(),
+              submitted_at: new Date().toISOString(),
+              data: params
+            };
+          }
+        });
+
+        // 工具 2: 验证字段
+        await navigator.modelContext.registerTool({
+          name: 'validate_field',
+          description: '验证表单字段',
+          inputSchema: {
+            type: 'object',
+            properties: {
+                field_name: { type: 'string', description: '字段名称' },
+                value: { type: 'string', description: '字段值' }
+            },
+            required: ['field_name', 'value']
+          },
+          execute: async ({ field_name, value }) => {
+            const validations = {
+              name: (v) => v.length >= 2,
+              email: (v) => /^[^\s@]+@[^\s@]+\.[^\s]+$/.test(v),
+              department: (v) => ['engineering', 'product', 'design', 'marketing', 'hr', 'finance'].includes(v),
+              position: (v) => v.length >= 2
+            };
+            
+            const valid = validations[field_name]?.(value) ?? false;
+            
+            return {
+              field: field_name,
+              value,
+              valid,
+              message: valid ? `${field_name} 验证通过` : `${field_name} 验证失败`
+            };
+          }
+        });
+
+        // 工具 3: 获取部门选项
+        await navigator.modelContext.registerTool({
+          name: 'get_department_options',
+          description: '获取可选的部门列表',
+          inputSchema: { type: 'object', properties: {} },
+          execute: async () => {
+            return {
+              departments: [
+                { id: 'engineering', name: '工程部' },
+                { id: 'product', name: '产品部' },
+                { id: 'design', name: '设计部' },
+                { id: 'marketing', name: '市场部' },
+                { id: 'hr', name: '人事部' },
+                { id: 'finance', name: '财务部' }
+              ]
+            };
+          }
+        });
+
+        // 工具 4: 获取技能列表
+        await navigator.modelContext.registerTool({
+          name: 'get_skills_list',
+          description: '获取可选择的技能列表',
+          inputSchema: { type: 'object', properties: {} },
+          execute: async () => {
+            return { skills };
+          }
+        });
+
+        console.log('WebMCP tools registered successfully');
+        addLog('webmcp', '4 个 WebMCP 工具已注册: submit_form, validate_field, get_department_options, get_skills_list');
+      } catch (error) {
+        console.error('Failed to register WebMCP tools:', error);
+      }
+    }
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSkills();
+      registerWebMCPTools();
+      
+      // 设置日期最小值
+      const dateInput = document.getElementById('startDate');
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.min = today;
+      dateInput.value = today;
+      
+      // 填充示例数据
+      document.getElementById('name').value = '张三';
+      document.getElementById('email').value = 'zhangsan@example.com';
+      document.getElementById('position').value = '高级工程师';
+      
+      addLog('manual', '已预填充示例数据，可直接点击提交');
+    });
+  </script>
+</body>
+</html>
