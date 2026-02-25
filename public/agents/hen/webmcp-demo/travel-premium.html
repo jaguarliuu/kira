@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOMAD · AI Travel Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #F7F5F0;
+      --charcoal: #1A1A1A;
+      --sage: #7C8C6E;
+      --terracotta: #C67B5C;
+      --silk: #E8E4DD;
+      --ink: #2D2D2D;
+      --muted: #8A8A8A;
+      --glass: rgba(247, 245, 240, 0.85);
+      --shadow-soft: 0 4px 24px rgba(0,0,0,0.06);
+      --shadow-elevated: 0 12px 48px rgba(0,0,0,0.12);
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.4;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      z-index: 9999;
+    }
+
+    /* Custom cursor */
+    body {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='1.5'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E") 12 12, auto;
+    }
+
+    a, button, [role="button"] {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23C67B5C' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='6'/%3E%3C/svg%3E") 12 12, pointer;
+    }
+
+    /* Typography */
+    .font-display {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.5rem 0;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    header.scrolled {
+      padding: 1rem 0;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--charcoal);
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--terracotta);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--charcoal);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--terracotta);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(124, 140, 110, 0.15);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--sage);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--sage);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 55%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--silk) 0%, rgba(198, 123, 92, 0.1) 100%);
+      clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);
+      z-index: -1;
+    }
+
+    .hero-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .hero-text {
+      animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-tag {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: var(--charcoal);
+      color: var(--cream);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 500;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      color: var(--charcoal);
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--terracotta);
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 480px;
+      margin-bottom: 2.5rem;
+      line-height: 1.8;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: var(--charcoal);
+      color: var(--cream);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--charcoal);
+      border: 1px solid var(--charcoal);
+    }
+
+    .btn-secondary:hover {
+      background: var(--charcoal);
+      color: var(--cream);
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: flex;
+      gap: 3rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .stat {
+      text-align: left;
+    }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hero Visual */
+    .hero-visual {
+      position: relative;
+      animation: fadeIn 1.2s ease-out 0.3s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .demo-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-elevated);
+      overflow: hidden;
+      transform: rotate(-2deg);
+      transition: transform 0.5s ease;
+    }
+
+    .demo-card:hover {
+      transform: rotate(0deg) scale(1.02);
+    }
+
+    .demo-card-header {
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, var(--charcoal) 0%, #333 100%);
+      color: var(--cream);
+    }
+
+    .demo-card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .demo-card-subtitle {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .demo-card-body {
+      padding: 2rem;
+    }
+
+    .flight-preview {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem;
+      background: var(--silk);
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .flight-preview.highlighted {
+      border-color: var(--terracotta);
+      background: white;
+      transform: scale(1.02);
+    }
+
+    .flight-route {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .flight-city {
+      text-align: center;
+    }
+
+    .flight-code {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--charcoal);
+    }
+
+    .flight-time {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .flight-path {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .flight-duration {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .flight-line {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--charcoal) 50%, var(--terracotta) 50%);
+      position: relative;
+    }
+
+    .flight-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1rem;
+    }
+
+    .flight-price {
+      text-align: right;
+    }
+
+    .price-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--terracotta);
+    }
+
+    .price-note {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* AI Activity Panel */
+    .ai-panel {
+      background: var(--charcoal);
+      color: var(--cream);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.5rem;
+      font-size: 0.85rem;
+    }
+
+    .ai-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+
+    .ai-typing {
+      color: var(--terracotta);
+    }
+
+    .ai-typing::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    .ai-action {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      opacity: 0;
+      transform: translateX(-10px);
+      animation: slideIn 0.4s ease forwards;
+    }
+
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .ai-action-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    .ai-action-text {
+      color: rgba(255,255,255,0.8);
+    }
+
+    .ai-action-text strong {
+      color: var(--terracotta);
+    }
+
+    /* Section: Demo */
+    .demo-section {
+      padding: 8rem 0;
+      background: white;
+      position: relative;
+    }
+
+    .demo-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--silk), transparent);
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 4rem;
+    }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: var(--terracotta);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: var(--charcoal);
+    }
+
+    .section-desc {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    /* Comparison Grid */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .comparison-card {
+      background: var(--cream);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .comparison-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .comparison-card.webmcp {
+      background: linear-gradient(135deg, rgba(124, 140, 110, 0.1) 0%, var(--cream) 100%);
+      border-color: var(--sage);
+    }
+
+    .comparison-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .comparison-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: var(--silk);
+    }
+
+    .comparison-card.webmcp .comparison-icon {
+      background: var(--sage);
+    }
+
+    .comparison-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .comparison-subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .comparison-stats {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .comparison-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .comparison-stat:last-child {
+      border-bottom: none;
+    }
+
+    .comparison-stat-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .comparison-stat-value {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .comparison-stat-value.good {
+      color: var(--sage);
+    }
+
+    .comparison-stat-value.bad {
+      color: var(--terracotta);
+    }
+
+    /* Steps Timeline */
+    .steps-timeline {
+      display: flex;
+      gap: 2rem;
+      margin-top: 3rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+    }
+
+    .step-item {
+      flex: 0 0 280px;
+      background: var(--cream);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      position: relative;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .step-number {
+      position: absolute;
+      top: -12px;
+      left: 1.5rem;
+      width: 32px;
+      height: 32px;
+      background: var(--charcoal);
+      color: var(--cream);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .step-content {
+      margin-top: 0.5rem;
+    }
+
+    .step-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* Tools Panel */
+    .tools-section {
+      padding: 8rem 0;
+      background: var(--charcoal);
+      color: var(--cream);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .tool-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .tool-card:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-4px);
+    }
+
+    .tool-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .tool-name {
+      font-family: 'DM Sans', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--terracotta);
+    }
+
+    .tool-status {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.75rem;
+      background: rgba(124, 140, 110, 0.2);
+      color: var(--sage);
+      border-radius: 100px;
+    }
+
+    .tool-desc {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .tool-schema {
+      background: rgba(0,0,0,0.3);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      font-family: 'DM Sans', monospace;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* CTA Section */
+    .cta-section {
+      padding: 8rem 0;
+      background: var(--silk);
+      text-align: center;
+    }
+
+    .cta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      color: var(--charcoal);
+    }
+
+    .cta-desc {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--charcoal);
+      color: var(--cream);
+      padding: 1.25rem 1.75rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-elevated);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transform: translateY(150%);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      font-size: 1.5rem;
+    }
+
+    .toast-content {
+      text-align: left;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .toast-message {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .hero-desc {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .hero-visual {
+        order: -1;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .stats-row {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .steps-timeline {
+        flex-direction: column;
+      }
+
+      .step-item {
+        flex: none;
+      }
+    }
+
+    /* Print styles */
+    @media print {
+      header, .hero-bg, body::before {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="#" class="logo">NOMAD<span>.</span></a>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="#demo">演示</a></li>
+            <li><a href="#tools">工具</a></li>
+            <li><a href="#about">关于</a></li>
+          </ul>
+        </nav>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          WebMCP Ready
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <span class="hero-tag">WebMCP · AI-Native Interface</span>
+          <h1 class="hero-title">
+            旅行规划，<br>
+            <em>一句话的事</em>
+          </h1>
+          <p class="hero-desc">
+            NOMAD 是一个 WebMCP 驱动的旅行规划演示。告诉 AI 你想去哪里，
+            它会自动调用页面工具完成搜索、筛选、预订——无需截图，无需点击。
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="runDemo()">
+              <span>▶</span>
+              观看演示
+            </button>
+            <button class="btn btn-secondary" onclick="scrollToDemo()">
+              了解更多
+            </button>
+          </div>
+          <div class="stats-row">
+            <div class="stat">
+              <div class="stat-value">99%</div>
+              <div class="stat-label">Token 节省</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">50ms</div>
+              <div class="stat-label">平均响应</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">100%</div>
+              <div class="stat-label">操作可追溯</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="demo-card">
+            <div class="demo-card-header">
+              <div class="demo-card-title">东京之旅</div>
+              <div class="demo-card-subtitle">2026.03.15 - 2026.03.20 · 2人</div>
+            </div>
+            <div class="demo-card-body">
+              <div class="flight-preview" id="flight1">
+                <div class="flight-route">
+                  <div class="flight-city">
+                    <div class="flight-code">PEK</div>
+                    <div class="flight-time">08:30</div>
+                  </div>
+                  <div class="flight-path">
+                    <span class="flight-duration">3h 15m</span>
+                    <div class="flight-line"><span class="flight-icon">✈</span></div>
+                    <span style="font-size: 0.7rem; color: var(--sage);">直飞</span>
+                  </div>
+                  <div class="flight-city">
+                    <div class="flight-code">NRT</div>
+                    <div class="flight-time">12:45</div>
+                  </div>
+                </div>
+                <div class="flight-price">
+                  <div class="price-value">¥2,680</div>
+                  <div class="price-note">/ 人</div>
+                </div>
+              </div>
+              <div class="flight-preview" id="flight2">
+                <div class="flight-route">
+                  <div class="flight-city">
+                    <div class="flight-code">PEK</div>
+                    <div class="flight-time">14:00</div>
+                  </div>
+                  <div class="flight-path">
+                    <span class="flight-duration">3h 30m</span>
+                    <div class="flight-line"><span class="flight-icon">✈</span></div>
+                    <span style="font-size: 0.7rem; color: var(--sage);">直飞</span>
+                  </div>
+                  <div class="flight-city">
+                    <div class="flight-code">HND</div>
+                    <div class="flight-time">18:30</div>
+                  </div>
+                </div>
+                <div class="flight-price">
+                  <div class="price-value">¥3,120</div>
+                  <div class="price-note">/ 人</div>
+                </div>
+              </div>
+              <div class="ai-panel" id="aiPanel">
+                <div class="ai-status">
+                  <span class="ai-typing">AI Agent 执行中</span>
+                </div>
+                <div id="aiActions"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section" id="demo">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">对比演示</span>
+        <h2 class="section-title">WebMCP vs 传统方式</h2>
+        <p class="section-desc">
+          同样的任务，两种截然不同的实现方式。感受一下效率的差异。
+        </p>
+      </div>
+
+      <div class="comparison-grid">
+        <div class="comparison-card">
+          <div class="comparison-header">
+            <div class="comparison-icon">📸</div>
+            <div>
+              <div class="comparison-title">截图 + 点击</div>
+              <div class="comparison-subtitle">传统 Browser Agent</div>
+            </div>
+          </div>
+          <div class="comparison-stats">
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">耗时</span>
+              <span class="comparison-stat-value bad">45-60 秒</span>
+            </div>
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">Token 消耗</span>
+              <span class="comparison-stat-value bad">~80,000</span>
+            </div>
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">操作步骤</span>
+              <span class="comparison-stat-value bad">24+ 步</span>
+            </div>
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">成功率</span>
+              <span class="comparison-stat-value bad">~85%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="comparison-card webmcp">
+          <div class="comparison-header">
+            <div class="comparison-icon">⚡</div>
+            <div>
+              <div class="comparison-title">WebMCP 调用</div>
+              <div class="comparison-subtitle">结构化工具调用</div>
+            </div>
+          </div>
+          <div class="comparison-stats">
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">耗时</span>
+              <span class="comparison-stat-value good">~50ms</span>
+            </div>
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">Token 消耗</span>
+              <span class="comparison-stat-value good">~800</span>
+            </div>
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">操作步骤</span>
+              <span class="comparison-stat-value good">1 次调用</span>
+            </div>
+            <div class="comparison-stat">
+              <span class="comparison-stat-label">成功率</span>
+              <span class="comparison-stat-value good">99%+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="steps-timeline">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">用户说需求</div>
+            <div class="step-desc">"帮我找下周北京到东京最便宜的机票"</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">AI 发现工具</div>
+            <div class="step-desc">Agent 通过 WebMCP 发现 search_flights 工具</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">结构化调用</div>
+            <div class="step-desc">直接调用工具，传入参数 {from: "PEK", to: "TYO"}</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-title">页面实时反馈</div>
+            <div class="step-desc">页面 UI 同步更新，用户可见整个过程</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tools-section" id="tools">
+    <div class="container">
+      <div class="section-header" style="color: var(--cream);">
+        <span class="section-tag" style="color: var(--terracotta);">已注册工具</span>
+        <h2 class="section-title" style="color: var(--cream);">WebMCP Tools</h2>
+        <p class="section-desc" style="color: rgba(255,255,255,0.6);">
+          这个页面暴露了 6 个工具，AI Agent 可以直接调用
+        </p>
+      </div>
+
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-name">search_flights</span>
+            <span class="tool-status">已注册</span>
+          </div>
+          <p class="tool-desc">搜索航班，支持出发地、目的地、日期、乘客数</p>
+          <div class="tool-schema">
+            from: string<br>
+            to: string<br>
+            date: string<br>
+            passengers?: number
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-name">search_hotels</span>
+            <span class="tool-status">已注册</span>
+          </div>
+          <p class="tool-desc">搜索目的地酒店，支持入住/退房日期</p>
+          <div class="tool-schema">
+            destination: string<br>
+            check_in: string<br>
+            check_out: string<br>
+            guests?: number
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-name">select_flight</span>
+            <span class="tool-status">已注册</span>
+          </div>
+          <p class="tool-desc">选择并预订指定航班</p>
+          <div class="tool-schema">
+            flight_id: string
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-name">select_hotel</span>
+            <span class="tool-status">已注册</span>
+          </div>
+          <p class="tool-desc">选择并预订酒店</p>
+          <div class="tool-schema">
+            hotel_id: string<br>
+            room_type?: string
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-name">get_itinerary</span>
+            <span class="tool-status">已注册</span>
+          </div>
+          <p class="tool-desc">获取当前行程摘要</p>
+          <div class="tool-schema">
+            无参数
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <span class="tool-name">book_trip</span>
+            <span class="tool-status">已注册</span>
+          </div>
+          <p class="tool-desc">一键预订整个行程</p>
+          <div class="tool-schema">
+            自动使用已选择的项目
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <h2 class="cta-title">准备好体验了吗？</h2>
+      <p class="cta-desc">
+        在支持 WebMCP 的浏览器中打开此页面，让 AI Agent 帮你完成旅行规划。
+      </p>
+      <button class="btn btn-primary" onclick="runDemo()">
+        <span>▶</span>
+        运行演示
+      </button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast">
+    <span class="toast-icon">✅</span>
+    <div class="toast-content">
+      <div class="toast-title" id="toastTitle">操作成功</div>
+      <div class="toast-message" id="toastMessage">航班已选择</div>
+    </div>
+  </div>
+
+  <script>
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Toast notification
+    function showToast(title, message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastTitle').textContent = title;
+      document.getElementById('toastMessage').textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Scroll to demo
+    function scrollToDemo() {
+      document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // AI Actions animation
+    function addAIAction(icon, text) {
+      const container = document.getElementById('aiActions');
+      const action = document.createElement('div');
+      action.className = 'ai-action';
+      action.style.animationDelay = `${container.children.length * 0.2}s`;
+      action.innerHTML = `
+        <div class="ai-action-icon">${icon}</div>
+        <div class="ai-action-text">${text}</div>
+      `;
+      container.appendChild(action);
+    }
+
+    // Demo sequence
+    async function runDemo() {
+      const actions = document.getElementById('aiActions');
+      actions.innerHTML = '';
+
+      // Clear highlights
+      document.querySelectorAll('.flight-preview').forEach(el => {
+        el.classList.remove('highlighted');
+      });
+
+      // Simulate AI actions with visual feedback
+      await delay(500);
+      addAIAction('🔍', '发现 <strong>search_flights</strong> 工具');
+      
+      await delay(800);
+      addAIAction('📤', '调用 <strong>search_flights</strong>({ from: "PEK", to: "TYO" })');
+      
+      await delay(600);
+      addAIAction('📊', '返回 <strong>2</strong> 个航班');
+      
+      await delay(500);
+      addAIAction('✅', '选择最便宜的航班');
+      
+      // Highlight the selected flight
+      await delay(300);
+      document.getElementById('flight1').classList.add('highlighted');
+      
+      await delay(400);
+      addAIAction('📝', '调用 <strong>select_flight</strong>({ id: "f1" })');
+      
+      await delay(500);
+      showToast('✈️ 航班已选择', 'PEK → NRT · ¥2,680/人');
+
+      // Update stats
+      document.querySelector('.stat-value').textContent = '99%';
+      document.querySelectorAll('.stat-value')[1].textContent = '48ms';
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // WebMCP Tool Registration
+    async function registerWebMCPTools() {
+      if (!navigator.modelContext) {
+        console.log('WebMCP not supported');
+        return;
+      }
+
+      try {
+        await navigator.modelContext.registerTool({
+          name: 'search_flights',
+          description: '搜索航班',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              from: { type: 'string', description: '出发城市代码' },
+              to: { type: 'string', description: '目的城市代码' },
+              date: { type: 'string', description: '出发日期' },
+              passengers: { type: 'number', description: '乘客人数' }
+            },
+            required: ['from', 'to', 'date']
+          },
+          execute: async (params) => {
+            runDemo();
+            return {
+              success: true,
+              flights: [
+                { id: 'f1', from: params.from, to: params.to, price: 2680 },
+                { id: 'f2', from: params.from, to: params.to, price: 3120 }
+              ]
+            };
+          }
+        });
+
+        await navigator.modelContext.registerTool({
+          name: 'select_flight',
+          description: '选择航班',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              flight_id: { type: 'string', description: '航班ID' }
+            },
+            required: ['flight_id']
+          },
+          execute: async ({ flight_id }) => {
+            document.getElementById('flight1').classList.add('highlighted');
+            showToast('✈️ 航班已选择', '航班 ID: ' + flight_id);
+            return { success: true, flight_id };
+          }
+        });
+
+        await navigator.modelContext.registerTool({
+          name: 'get_itinerary',
+          description: '获取行程摘要',
+          inputSchema: { type: 'object', properties: {} },
+          execute: async () => ({
+            flight: { from: 'PEK', to: 'TYO', price: 2680 },
+            total: 2680
+          })
+        });
+
+        console.log('WebMCP tools registered');
+      } catch (e) {
+        console.log('WebMCP registration skipped:', e.message);
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      registerWebMCPTools();
+    });
+  </script>
+</body>
+</html>
