@@ -1,326 +1,619 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>科技日报 · 2026-02-26</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --cream: #FBFAF6;
-      --ink: #1A1A1A;
-      --sage: #5B7553;
-      --terracotta: #C4704B;
-      --stone: #E5E2DB;
-      --muted: #7A7672;
-      --paper: #FFFFFF;
-      --shadow-soft: 0 2px 12px rgba(0,0,0,0.06);
-      --radius-md: 12px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Source Sans 3', -apple-system, sans-serif;
-      background: var(--cream);
-      color: var(--ink);
-      line-height: 1.7;
-    }
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      opacity: 0.25; pointer-events: none; z-index: -1;
-    }
-    .container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
-    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--stone); margin-bottom: 2.5rem; }
-    .masthead { font-family: 'Playfair Display', serif; font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
-    .date-display { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 500; line-height: 1.1; margin-bottom: 0.5rem; }
-    .date-display .day { font-size: 6rem; display: block; line-height: 0.9; }
-    .edition { display: inline-block; padding: 0.4rem 1rem; background: var(--ink); color: var(--cream); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; margin-top: 1rem; }
-    .section { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--stone); }
-    .section:last-child { border-bottom: none; }
-    .section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
-    .section-icon { width: 40px; height: 40px; background: var(--sage); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .section-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; }
-    .trending-list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .trending-item { display: grid; grid-template-columns: 36px 1fr auto; gap: 1rem; align-items: start; padding: 1rem 1.25rem; background: var(--paper); border-radius: var(--radius-md); border: 1px solid var(--stone); transition: all 0.25s; }
-    .trending-item:hover { transform: translateX(4px); box-shadow: var(--shadow-soft); border-color: var(--sage); }
-    .rank { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; color: var(--muted); line-height: 1; }
-    .trending-content { overflow: hidden; }
-    .repo-name { font-weight: 600; font-size: 1rem; color: var(--ink); text-decoration: none; display: block; margin-bottom: 0.25rem; }
-    .repo-name:hover { color: var(--sage); }
-    .repo-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.5; margin-bottom: 0.5rem; }
-    .repo-meta { display: flex; gap: 1rem; font-size: 0.8rem; }
-    .repo-lang { display: flex; align-items: center; gap: 0.35rem; color: var(--muted); }
-    .lang-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .trending-stats { text-align: right; min-width: 80px; }
-    .stars-total { font-size: 0.85rem; color: var(--muted); }
-    .stars-change { font-weight: 600; color: var(--sage); font-size: 0.9rem; }
-    .stats-bar { display: flex; justify-content: center; gap: 3rem; padding: 1.5rem; background: var(--paper); border-radius: 20px; margin-bottom: 2.5rem; border: 1px solid var(--stone); }
-    .stat { text-align: center; }
-    .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 600; color: var(--ink); }
-    .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; }
-    footer { text-align: center; padding: 2rem 0; border-top: 1px solid var(--stone); margin-top: 3rem; }
-    .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 0.5rem; }
-    .footer-copy { font-size: 0.8rem; color: var(--muted); }
-    @media (max-width: 600px) {
-      .date-display .day { font-size: 4rem; }
-      .trending-item { grid-template-columns: 28px 1fr; }
-      .trending-stats { grid-column: 2; text-align: left; margin-top: 0.5rem; }
-      .stats-bar { flex-direction: column; gap: 1rem; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 技术日报 — 2026年2月26日</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-cream: #FBFAF6;
+            --text-ink: #1A1A1A;
+            --accent-sage: #5B7553;
+            --accent-sage-light: #7A9A70;
+            --border-subtle: #D4D1C9;
+            --paper-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans 3', -apple-system, sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-ink);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        /* Masthead */
+        .masthead {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 3px solid var(--accent-sage);
+        }
+
+        .masthead h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            color: var(--text-ink);
+        }
+
+        .masthead .date {
+            font-size: 1.1rem;
+            color: var(--accent-sage);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .masthead .edition {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.3rem;
+            color: var(--text-ink);
+            margin-top: 10px;
+            opacity: 0.7;
+        }
+
+        /* Section Headers */
+        .section-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-header::before {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--accent-sage);
+        }
+
+        /* GitHub Trending Cards */
+        .trending-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .repo-card {
+            background: white;
+            border: 1px solid var(--border-subtle);
+            padding: 25px;
+            box-shadow: var(--paper-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .repo-card .name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-ink);
+        }
+
+        .repo-card .desc {
+            font-size: 0.95rem;
+            color: var(--text-ink);
+            opacity: 0.8;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .repo-card .meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--accent-sage);
+        }
+
+        .repo-card .meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* News List */
+        .news-section {
+            margin-bottom: 50px;
+        }
+
+        .news-item {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background 0.2s ease;
+        }
+
+        .news-item:hover {
+            background: linear-gradient(90deg, transparent 0%, rgba(91,117,83,0.03) 100%);
+            margin: 0 -10px;
+            padding: 20px 10px;
+        }
+
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-item h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-ink);
+        }
+
+        .news-item .source {
+            font-size: 0.85rem;
+            color: var(--accent-sage);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .news-item .excerpt {
+            font-size: 1rem;
+            color: var(--text-ink);
+            opacity: 0.85;
+            margin-bottom: 12px;
+        }
+
+        .news-item .meta {
+            font-size: 0.8rem;
+            color: var(--text-ink);
+            opacity: 0.5;
+        }
+
+        /* Tag badges */
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            background: var(--accent-sage);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 2px;
+            margin-left: 10px;
+        }
+
+        .tag.highlight {
+            background: var(--text-ink);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 2px solid var(--border-subtle);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-ink);
+            opacity: 0.6;
+        }
+
+        .footer p {
+            margin-bottom: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            .masthead h1 {
+                font-size: 2.5rem;
+            }
+
+            .trending-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                padding: 20px;
+            }
+            .repo-card {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="masthead">科技日报</div>
-      <div class="date-display">
-        <span class="day">26</span>
-        2026年02月 · 星期四
-      </div>
-      <div class="edition">第 126 期</div>
-    </header>
+    <div class="container">
+        <header class="masthead">
+            <h1>AI 技术日报</h1>
+            <div class="date">2026年2月26日</div>
+            <div class="edition">Thursday Edition</div>
+        </header>
 
-    <div class="stats-bar">
-      <div class="stat">
-        <div class="stat-value">15</div>
-        <div class="stat-label">GitHub 热门项目</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value">08:27</div>
-        <div class="stat-label">更新时间</div>
-      </div>
+        <!-- GitHub Trending Section -->
+        <section class="news-section">
+            <div class="section-header">GitHub 热门项目</div>
+            <div class="trending-grid">
+                <article class="repo-card">
+                    <div class="name">superpowers <span class="tag highlight">★ 61,821</span></div>
+                    <div class="desc">An agentic skills framework & software development methodology that works.</div>
+                    <div class="meta">
+                        <span>🔺 +1,250</span>
+                        <span>Shell</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">system-prompts-and-models-of-ai-tools <span class="tag highlight">★ 124,117</span></div>
+                    <div class="desc">System prompts, internal tools & AI models for 30+ AI coding tools and agents.</div>
+                    <div class="meta">
+                        <span>🔺 +1,241</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">Scrapling <span class="tag highlight">★ 15,015</span></div>
+                    <div class="desc">Adaptive Web Scraping framework handling single requests to full-scale crawls.</div>
+                    <div class="meta">
+                        <span>🔺 +1,656</span>
+                        <span>Python</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">skills <span class="tag highlight">★ 6,381</span></div>
+                    <div class="desc">Hugging Face skills framework for AI agents.</div>
+                    <div class="meta">
+                        <span>🔺 +1,538</span>
+                        <span>Python</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">GitNexus <span class="tag highlight">★ 3,701</span></div>
+                    <div class="desc">Zero-Server Code Intelligence Engine with Graph RAG Agent for code exploration.</div>
+                    <div class="meta">
+                        <span>🔺 +894</span>
+                        <span>TypeScript</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">Agent-Skills-for-Context-Engineering <span class="tag highlight">★ 10,711</span></div>
+                    <div class="desc">Comprehensive Agent Skills for context engineering and multi-agent architectures.</div>
+                    <div class="meta">
+                        <span>🔺 +1,042</span>
+                        <span>Python</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">hello-agents <span class="tag highlight">★ 21,938</span></div>
+                    <div class="desc">从零开始构建智能体 —— 智能体原理与实践教程</div>
+                    <div class="meta">
+                        <span>🔺 +222</span>
+                        <span>Python</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">deer-flow <span class="tag highlight">★ 20,445</span></div>
+                    <div class="desc">Open-source SuperAgent harness with sandboxes, memories, tools, skills and subagents.</div>
+                    <div class="meta">
+                        <span>🔺 +59</span>
+                        <span>TypeScript</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">PageIndex <span class="tag highlight">★ 17,708</span></div>
+                    <div class="desc">Document Index for Vectorless, Reasoning-based RAG.</div>
+                    <div class="meta">
+                        <span>🔺 +378</span>
+                        <span>Python</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">memU <span class="tag highlight">★ 10,792</span></div>
+                    <div class="desc">Memory for 24/7 proactive agents like openclaw.</div>
+                    <div class="meta">
+                        <span>🔺 +187</span>
+                        <span>Python</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">learn-claude-code <span class="tag highlight">★ 17,965</span></div>
+                    <div class="desc">Bash is all you need - A nano Claude Code–like agent, built from 0 to 1.</div>
+                    <div class="meta">
+                        <span>🔺 +175</span>
+                        <span>TypeScript</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">plano <span class="tag highlight">★ 5,563</span></div>
+                    <div class="desc">AI-native proxy and data plane for agentic apps - offloads plumbing work.</div>
+                    <div class="meta">
+                        <span>🔺 +205</span>
+                        <span>Rust</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">ai-guide <span class="tag highlight">★ 7,679</span></div>
+                    <div class="desc">AI 资源大全 + Vibe Coding 零基础教程，分享大模型选择指南和 AI 工具用法。</div>
+                    <div class="meta">
+                        <span>🔺 +182</span>
+                        <span>JavaScript</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">Megatron-LM <span class="tag highlight">★ 15,350</span></div>
+                    <div class="desc">Ongoing research training transformer models at scale.</div>
+                    <div class="meta">
+                        <span>🔺 +10</span>
+                        <span>Python</span>
+                    </div>
+                </article>
+
+                <article class="repo-card">
+                    <div class="name">ruvector <span class="tag highlight">★ 1,175</span></div>
+                    <div class="desc">High Performance, Real-Time, Self-Learning, Vector Graph Neural Network, and Database.</div>
+                    <div class="meta">
+                        <span>🔺 +437</span>
+                        <span>Rust</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- LLM News Section -->
+        <section class="news-section">
+            <div class="section-header">大模型新闻</div>
+
+            <article class="news-item">
+                <div class="source">机器之心 <span class="tag highlight">多源报道</span></div>
+                <h3>最强 Coding Plan 上线！阿里云上线四大顶尖开源模型</h3>
+                <p class="excerpt">阿里云 Coding Plan 集齐 Qwen3.5、GLM-5、MiniMax M2.5、Kimi K2.5 四大国产模型最强版本，开发者迎来 "Token 自由"。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Sebastian Raschka</div>
+                <h3>A Dream of Spring for Open-Weight LLMs: 10 Architectures from Jan-Feb 2026</h3>
+                <p class="excerpt">2026年初发布的10个开源权重大模型架构综述。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">机器之心</div>
+                <h3>ICLR 2026 | 把视频扩散模型压到 4bit，还能接近满血效果？</h3>
+                <p class="excerpt">QVGen 让「超低比特视频生成量化」真正可用，大幅降低内存占用。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">The Decoder</div>
+                <h3>Study shows why reasoning models often think far beyond the solution</h3>
+                <p class="excerpt">研究发现推理模型经常在找到解决方案后继续"过度思考"。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">OpenAI Blog</div>
+                <h3>Disrupting malicious uses of AI | February 2026</h3>
+                <p class="excerpt">OpenAI 发布关于打击 AI 恶意使用的 2 月报告。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Gary Marcus</div>
+                <h3>Code Red for Humanity?</h3>
+                <p class="excerpt">Gary Marcus 对当前 AI 发展状态的深度评论。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Reddit r/MachineLearning <span class="tag">讨论</span></div>
+                <h3>[R] Large-Scale Online Deanonymization with LLMs</h3>
+                <p class="excerpt">使用大模型进行大规模在线去匿名化的研究论文讨论。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+        </section>
+
+        <!-- AI Agent News Section -->
+        <section class="news-section">
+            <div class="section-header">AI Agent 新闻</div>
+
+            <article class="news-item">
+                <div class="source">OpenClaw Releases <span class="tag highlight">版本更新</span></div>
+                <h3>openclaw v2026.2.24</h3>
+                <p class="excerpt">Auto-reply/Abort 快捷键扩展：支持更多停止短语，接受尾随标点。停止命令现在更智能识别。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">The Decoder</div>
+                <h3>Perplexity Computer bundles rival AI models into one agentic workflow system for $200 a month</h3>
+                <p class="excerpt">Perplexity Computer 将竞品 AI 模型整合到一个代理工作流系统中，月费 200 美元。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Simon Willison</div>
+                <h3>Claude Code Remote Control</h3>
+                <p class="excerpt">探索 Claude Code 的远程控制功能和用法。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Simon Willison</div>
+                <h3>I vibe coded my dream macOS presentation app</h3>
+                <p class="excerpt">作者使用 Vibe Coding 模式构建了自己理想的 macOS 演示应用。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">机器之心</div>
+                <h3>遭谷歌制裁，OpenClaw 创始人怒怼：Anthropic 会先打电话，你们直接封号</h3>
+                <p class="excerpt">OpenClaw 创始人回应 Google 封号事件，批评其处理方式与 Anthropic 的差异。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">量子位 QbitAI</div>
+                <h3>MiniMax 又又来吃龙虾肉了！OpenClaw 真·一键部署，还有上万专家智能体等你差遣</h3>
+                <p class="excerpt">MiniMax 与 OpenClaw 的集成方案，提供一键部署和上万专家智能体。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Agno Releases <span class="tag highlight">版本更新</span></div>
+                <h3>agno v2.5.5</h3>
+                <p class="excerpt">Slack 接口更新：响应实时流式传输，工具调用、推理和工作流步骤的实时进度卡片。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">The Decoder</div>
+                <h3>Google relaunches its AI creative studio Flow with new features and integrations</h3>
+                <p class="excerpt">Google 重新推出其 AI 创意工作室 Flow，带来新功能和集成。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+        </section>
+
+        <!-- VibeCoding Section -->
+        <section class="news-section">
+            <div class="section-header">Vibe Coding</div>
+
+            <article class="news-item">
+                <div class="source">Simon Willison</div>
+                <h3>I vibe coded my dream macOS presentation app</h3>
+                <p class="excerpt">使用 AI 辅助编程（Vibe Coding）快速构建原型应用，展示了这种新编程范式的效率。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Simon Willison</div>
+                <h3>Claude Code Remote Control</h3>
+                <p class="excerpt">探索 Claude Code 的远程控制能力，这是 Vibe Coding 工具链的重要组成部分。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">鱼皮 AI 导航</div>
+                <h3>AI 资源大全 + Vibe Coding 零基础教程</h3>
+                <p class="excerpt">程序员鱼皮整理的 AI 资源，包含 Vibe Coding 零基础教程和 AI 工具用法指南。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">量子位 QbitAI</div>
+                <h3>马年4大顶流模型会师阿里云 Coding Plan 开工！</h3>
+                <p class="excerpt">Token 量大管饱，自由切换真香 —— 展示了 Vibe Coding 时代的模型选择自由。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">shareAI-lab</div>
+                <h3>learn-claude-code</h3>
+                <p class="excerpt">Bash is all you need - 从零构建类 Claude Code 的 AI 编程助手，Vibe Coding 学习实践。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+        </section>
+
+        <!-- Open Source Models Section -->
+        <section class="news-section">
+            <div class="section-header">开源模型动态</div>
+
+            <article class="news-item">
+                <div class="source">机器之心 <span class="tag highlight">多源报道</span></div>
+                <h3>最强 Coding Plan 上线！阿里云上线四大顶尖开源模型</h3>
+                <p class="excerpt">Qwen3.5、GLM-5、MiniMax M2.5、Kimi K2.5 四大开源模型的最新版本齐聚阿里云。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Sebastian Raschka</div>
+                <h3>A Dream of Spring for Open-Weight LLMs: 10 Architectures from Jan-Feb 2026</h3>
+                <p class="excerpt">2026年春季开源权重大模型的繁荣景象综述，涵盖 10 个新架构。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">机器之心</div>
+                <h3>ICLR 2026 | 把视频扩散模型压到 4bit</h3>
+                <p class="excerpt">QVGen 实现了超低比特视频生成量化，让大模型在更少硬件资源下运行。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Ollama Releases <span class="tag">版本更新</span></div>
+                <h3>ollama v0.17.1-rc2</h3>
+                <p class="excerpt">添加 Nemotron 架构支持，修复 MLX 内存过度使用问题。</p>
+                <div class="meta">2026年2月24日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">OpenAI Python SDK <span class="tag">版本更新</span></div>
+                <h3>openai-python v2.24.0</h3>
+                <p class="excerpt">API 添加 phase 支持，修复 phase enum，更新 phase 文档。</p>
+                <div class="meta">2026年2月24日</div>
+            </article>
+
+            <article class="news-item">
+                <div class="source">Anthropic SDK <span class="tag">版本更新</span></div>
+                <h3>anthropic-sdk-python v0.84.0</h3>
+                <p class="excerpt">API 变更 array_format 为 brackets，移除 CLI 发布部分，添加转换助手。</p>
+                <div class="meta">2026年2月25日</div>
+            </article>
+        </section>
+
+        <footer class="footer">
+            <p><strong>AI 技术日报</strong> — 每日精选 LLM、AI Agent、开源模型、Vibe Coding 动态</p>
+            <p>Generated by Hen 🗿 | Data sources: GitHub Trending, RSS Feeds</p>
+            <p style="margin-top: 15px; font-style: italic;">"Stay curious, keep building."</p>
+        </footer>
     </div>
-
-    <section class="section">
-      <div class="section-header">
-        <div class="section-icon">🚀</div>
-        <h2 class="section-title">GitHub 每日趋势</h2>
-      </div>
-      <div class="trending-list">
-        
-        <div class="trending-item">
-          <div class="rank">1</div>
-          <div class="trending-content">
-            <a href="https://github.com/D4Vinci/Scrapling" class="repo-name" target="_blank">D4Vinci/Scrapling</a>
-            <div class="repo-desc">🕷️ An adaptive Web Scraping framework that handles everything from a single request to a full-scale crawl!</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+1,656</div>
-            <div class="stars-total">14,966 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">2</div>
-          <div class="trending-content">
-            <a href="https://github.com/huggingface/skills" class="repo-name" target="_blank">huggingface/skills</a>
-            <div class="repo-desc"></div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+1,538</div>
-            <div class="stars-total">6,365 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">3</div>
-          <div class="trending-content">
-            <a href="https://github.com/abhigyanpatwari/GitNexus" class="repo-name" target="_blank">abhigyanpatwari/GitNexus</a>
-            <div class="repo-desc">GitNexus: The Zero-Server Code Intelligence Engine - GitNexus is a client-side knowledge graph creator that runs entirely in your browser. Drop in a GitHub repo or ZIP file, and get an interactive kno</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3178c6"></span>TypeScript</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+894</div>
-            <div class="stars-total">3,683 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">4</div>
-          <div class="trending-content">
-            <a href="https://github.com/obra/superpowers" class="repo-name" target="_blank">obra/superpowers</a>
-            <div class="repo-desc">An agentic skills framework & software development methodology that works.</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#89e051"></span>Shell</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+1,250</div>
-            <div class="stars-total">61,796 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">5</div>
-          <div class="trending-content">
-            <a href="https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering" class="repo-name" target="_blank">muratcankoylan/Agent-Skills-for-Context-Engineering</a>
-            <div class="repo-desc">A comprehensive collection of Agent Skills for context engineering, multi-agent architectures, and production agent systems. Use when building, optimizing, or debugging agent systems that require effe</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+1,042</div>
-            <div class="stars-total">10,684 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">6</div>
-          <div class="trending-content">
-            <a href="https://github.com/datawhalechina/hello-agents" class="repo-name" target="_blank">datawhalechina/hello-agents</a>
-            <div class="repo-desc">📚 《从零开始构建智能体》——从零开始的智能体原理与实践教程</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+222</div>
-            <div class="stars-total">21,923 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">7</div>
-          <div class="trending-content">
-            <a href="https://github.com/bytedance/deer-flow" class="repo-name" target="_blank">bytedance/deer-flow</a>
-            <div class="repo-desc">An open-source SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skills and subagents, it handles different levels of tasks that could take minutes t</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3178c6"></span>TypeScript</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+59</div>
-            <div class="stars-total">20,438 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">8</div>
-          <div class="trending-content">
-            <a href="https://github.com/VectifyAI/PageIndex" class="repo-name" target="_blank">VectifyAI/PageIndex</a>
-            <div class="repo-desc">📑 PageIndex: Document Index for Vectorless, Reasoning-based RAG</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+378</div>
-            <div class="stars-total">17,700 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">9</div>
-          <div class="trending-content">
-            <a href="https://github.com/NevaMind-AI/memU" class="repo-name" target="_blank">NevaMind-AI/memU</a>
-            <div class="repo-desc">Memory for 24/7 proactive agents like openclaw (moltbot, clawdbot).</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+187</div>
-            <div class="stars-total">10,784 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">10</div>
-          <div class="trending-content">
-            <a href="https://github.com/ruvnet/ruvector" class="repo-name" target="_blank">ruvnet/ruvector</a>
-            <div class="repo-desc">RuVector is a High Performance, Real-Time, Self-Learning, Vector Graph Neural Network, and Database built in Rust.</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#dea584"></span>Rust</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+437</div>
-            <div class="stars-total">1,165 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">11</div>
-          <div class="trending-content">
-            <a href="https://github.com/NVIDIA/Megatron-LM" class="repo-name" target="_blank">NVIDIA/Megatron-LM</a>
-            <div class="repo-desc">Ongoing research training transformer models at scale</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+10</div>
-            <div class="stars-total">15,346 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">12</div>
-          <div class="trending-content">
-            <a href="https://github.com/shareAI-lab/learn-claude-code" class="repo-name" target="_blank">shareAI-lab/learn-claude-code</a>
-            <div class="repo-desc">Bash is all you need - A nano Claude Code–like agent, built from 0 to 1</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#3178c6"></span>TypeScript</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+175</div>
-            <div class="stars-total">17,954 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">13</div>
-          <div class="trending-content">
-            <a href="https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools" class="repo-name" target="_blank">x1xhlol/system-prompts-and-models-of-ai-tools</a>
-            <div class="repo-desc">FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke, Qoder, Replit, Same.dev, Trae, Traycer AI, V</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#6B7280"></span>Unknown</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+1,241</div>
-            <div class="stars-total">124,092 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">14</div>
-          <div class="trending-content">
-            <a href="https://github.com/katanemo/plano" class="repo-name" target="_blank">katanemo/plano</a>
-            <div class="repo-desc">Delivery infrastructure for agentic apps - Plano is an AI-native proxy and data plane that offloads plumbing work, so you stay focused on your agent's core logic (via any AI framework).</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#dea584"></span>Rust</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+205</div>
-            <div class="stars-total">5,553 ⭐</div>
-          </div>
-        </div>
-        <div class="trending-item">
-          <div class="rank">15</div>
-          <div class="trending-content">
-            <a href="https://github.com/liyupi/ai-guide" class="repo-name" target="_blank">liyupi/ai-guide</a>
-            <div class="repo-desc">程序员鱼皮的 AI 资源大全 + Vibe Coding 零基础教程，分享大模型选择指南（DeepSeek / GPT / Gemini / Claude）、最新 AI 资讯、Prompt 提示词大全、AI 知识百科（RAG / MCP / A2A）、AI 编程教程、AI 工具用法（Cursor / Claude Code / OpenClaw / TRAE / Lovable / Agent S</div>
-            <div class="repo-meta">
-              <span class="repo-lang"><span class="lang-dot" style="background:#f7df1e"></span>JavaScript</span>
-            </div>
-          </div>
-          <div class="trending-stats">
-            <div class="stars-change">+182</div>
-            <div class="stars-total">7,664 ⭐</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <footer>
-      <div class="footer-logo">墨迹 · 科技日报</div>
-      <div class="footer-copy">
-        数据来源：GitHub Trending API · 每日自动更新<br>
-        © 2026 AI 技术日报 · 仅供学习参考
-      </div>
-    </footer>
-  </div>
 </body>
 </html>
