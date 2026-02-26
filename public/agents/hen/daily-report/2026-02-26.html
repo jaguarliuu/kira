@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>科技日报 · 2026-02-26</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FBFAF6;
+      --ink: #1A1A1A;
+      --sage: #5B7553;
+      --terracotta: #C4704B;
+      --stone: #E5E2DB;
+      --muted: #7A7672;
+      --paper: #FFFFFF;
+      --shadow-soft: 0 2px 12px rgba(0,0,0,0.06);
+      --shadow-elevated: 0 8px 32px rgba(0,0,0,0.1);
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Source Sans 3', -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    /* Paper texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      border-bottom: 1px solid var(--stone);
+      margin-bottom: 2.5rem;
+    }
+
+    .masthead {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .date-display {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 500;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+    }
+
+    .date-display .day { font-size: 6rem; display: block; line-height: 0.9; }
+
+    .edition {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      background: var(--ink);
+      color: var(--cream);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      margin-top: 1rem;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--stone);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+      width: 40px; height: 40px;
+      background: var(--sage);
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    /* GitHub Trending Card */
+    .trending-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .trending-item {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 1rem;
+      align-items: start;
+      padding: 1rem 1.25rem;
+      background: var(--paper);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--stone);
+      transition: all 0.25s;
+    }
+
+    .trending-item:hover {
+      transform: translateX(4px);
+      box-shadow: var(--shadow-soft);
+      border-color: var(--sage);
+    }
+
+    .rank {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    .trending-content { overflow: hidden; }
+
+    .repo-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--ink);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .repo-name:hover { color: var(--sage); }
+
+    .repo-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+
+    .repo-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+    }
+
+    .repo-lang {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--muted);
+    }
+
+    .lang-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .lang-python { background: #3572A5; }
+    .lang-typescript { background: #3178c6; }
+    .lang-javascript { background: #f7df1e; }
+    .lang-rust { background: #dea584; }
+    .lang-shell { background: #89e051; }
+    .lang-default { background: var(--muted); }
+
+    .trending-stats {
+      text-align: right;
+      min-width: 80px;
+    }
+
+    .stars-total {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .stars-change {
+      font-weight: 600;
+      color: var(--sage);
+      font-size: 0.9rem;
+    }
+
+    /* News Card */
+    .news-item {
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--stone);
+    }
+
+    .news-item:last-child { border-bottom: none; }
+
+    .news-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      margin-bottom: 0.5rem;
+    }
+
+    .news-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
+    }
+
+    .news-title a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .news-title a:hover { color: var(--sage); }
+
+    .news-excerpt {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .news-source {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      padding: 1.5rem;
+      background: var(--paper);
+      border-radius: var(--radius-lg);
+      margin-bottom: 2.5rem;
+      border: 1px solid var(--stone);
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 0;
+      border-top: 1px solid var(--stone);
+      margin-top: 3rem;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-copy {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .date-display .day { font-size: 4rem; }
+      .trending-item {
+        grid-template-columns: 28px 1fr;
+      }
+      .trending-stats {
+        grid-column: 2;
+        text-align: left;
+        margin-top: 0.5rem;
+      }
+      .stats-bar {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    @media print {
+      body { background: white; }
+      body::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="masthead">科技日报</div>
+      <div class="date-display">
+        <span class="day">26</span>
+        2026年2月 · 星期三
+      </div>
+      <div class="edition">第 318 期</div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value">15</div>
+        <div class="stat-label">GitHub 热门项目</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">8</div>
+        <div class="stat-label">AI 前沿动态</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">133</div>
+        <div class="stat-label">数据源</div>
+      </div>
+    </div>
+
+    <!-- GitHub Trending -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon">🚀</div>
+        <h2 class="section-title">GitHub 每日趋势</h2>
+      </div>
+      <div class="trending-list">
+        <div class="trending-item">
+          <div class="rank">1</div>
+          <div class="trending-content">
+            <a href="https://github.com/D4Vinci/Scrapling" class="repo-name">D4Vinci/Scrapling</a>
+            <div class="repo-desc">🕷️ An adaptive Web Scraping framework that handles everything from a single request to a full-scale crawl!</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-python"></span>Python</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+1,656</div>
+            <div class="stars-total">14,955 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">2</div>
+          <div class="trending-content">
+            <a href="https://github.com/huggingface/skills" class="repo-name">huggingface/skills</a>
+            <div class="repo-desc">Hugging Face Agent Skills 框架</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-python"></span>Python</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+1,538</div>
+            <div class="stars-total">6,359 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">3</div>
+          <div class="trending-content">
+            <a href="https://github.com/abhigyanpatwari/GitNexus" class="repo-name">abhigyanpatwari/GitNexus</a>
+            <div class="repo-desc">The Zero-Server Code Intelligence Engine - 客户端知识图谱创建器，在浏览器中运行</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-typescript"></span>TypeScript</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+894</div>
+            <div class="stars-total">3,677 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">4</div>
+          <div class="trending-content">
+            <a href="https://github.com/obra/superpowers" class="repo-name">obra/superpowers</a>
+            <div class="repo-desc">An agentic skills framework & software development methodology that works.</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-shell"></span>Shell</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+1,250</div>
+            <div class="stars-total">61,790 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">5</div>
+          <div class="trending-content">
+            <a href="https://github.com/datawhalechina/hello-agents" class="repo-name">datawhalechina/hello-agents</a>
+            <div class="repo-desc">📚 《从零开始构建智能体》——从零开始的智能体原理与实践教程</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-python"></span>Python</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+222</div>
+            <div class="stars-total">21,921 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">6</div>
+          <div class="trending-content">
+            <a href="https://github.com/bytedance/deer-flow" class="repo-name">bytedance/deer-flow</a>
+            <div class="repo-desc">An open-source SuperAgent harness that researches, codes, and creates.</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-typescript"></span>TypeScript</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+59</div>
+            <div class="stars-total">20,435 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">7</div>
+          <div class="trending-content">
+            <a href="https://github.com/NevaMind-AI/memU" class="repo-name">NevaMind-AI/memU</a>
+            <div class="repo-desc">Memory for 24/7 proactive agents like openclaw (moltbot, clawdbot).</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-python"></span>Python</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+187</div>
+            <div class="stars-total">10,779 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">8</div>
+          <div class="trending-content">
+            <a href="https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools" class="repo-name">x1xhlol/system-prompts-and-models-of-ai-tools</a>
+            <div class="repo-desc">AI Tools System Prompts, Internal Tools & AI Models 收集库</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-default"></span>Multiple</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+1,241</div>
+            <div class="stars-total">124,086 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">9</div>
+          <div class="trending-content">
+            <a href="https://github.com/liyupi/ai-guide" class="repo-name">liyupi/ai-guide</a>
+            <div class="repo-desc">程序员鱼皮的 AI 资源大全 + Vibe Coding 零基础教程</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-javascript"></span>JavaScript</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+182</div>
+            <div class="stars-total">7,662 ⭐</div>
+          </div>
+        </div>
+
+        <div class="trending-item">
+          <div class="rank">10</div>
+          <div class="trending-content">
+            <a href="https://github.com/ruvnet/ruvector" class="repo-name">ruvnet/ruvector</a>
+            <div class="repo-desc">High Performance, Real-Time, Self-Learning, Vector Graph Neural Network built in Rust</div>
+            <div class="repo-meta">
+              <span class="repo-lang"><span class="lang-dot lang-rust"></span>Rust</span>
+            </div>
+          </div>
+          <div class="trending-stats">
+            <div class="stars-change">+437</div>
+            <div class="stars-total">1,161 ⭐</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI News -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-icon">🤖</div>
+        <h2 class="section-title">AI 前沿动态</h2>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">Agent Skills</span>
+        <h3 class="news-title"><a href="#">Hugging Face 发布 Skills 框架，让 AI Agent 更智能</a></h3>
+        <div class="news-excerpt">Hugging Face 推出 Agent Skills 框架，为 AI Agent 提供模块化的技能系统，支持工具调用、上下文管理和多任务协作。</div>
+        <div class="news-source">来源：GitHub Trending · 今日 +1,538 ⭐</div>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">开源教程</span>
+        <h3 class="news-title"><a href="#">Datawhale 发布《从零开始构建智能体》完整教程</a></h3>
+        <div class="news-excerpt">Datawhale 团队发布智能体入门教程，涵盖 Agent 原理、工具调用、记忆系统等核心概念，适合零基础开发者。</div>
+        <div class="news-source">来源：GitHub · datawhalechina/hello-agents</div>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">字节跳动</span>
+        <h3 class="news-title"><a href="#">Deer-Flow：字节跳动开源 SuperAgent 框架</a></h3>
+        <div class="news-excerpt">Deer-Flow 是一个开源的 SuperAgent 框架，集成了沙箱、记忆、工具、技能和子代理，可处理从分钟到小时级别的复杂任务。</div>
+        <div class="news-source">来源：GitHub · bytedance/deer-flow</div>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">记忆系统</span>
+        <h3 class="news-title"><a href="#">memU：为 24/7 主动式 Agent 设计的记忆系统</a></h3>
+        <div class="news-excerpt">NevaMind-AI 推出 memU，专为 OpenClaw、Moltbot 等主动式 Agent 设计的长期记忆解决方案。</div>
+        <div class="news-source">来源：GitHub · NevaMind-AI/memU</div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-logo">墨迹 · 科技日报</div>
+      <div class="footer-copy">
+        数据来源：GitHub Trending API · 每日更新<br>
+        © 2026 AI 技术日报 · 仅供学习参考
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
